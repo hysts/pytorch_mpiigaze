@@ -5,6 +5,7 @@ import os
 import time
 import json
 from collections import OrderedDict
+import importlib
 import logging
 import argparse
 import numpy as np
@@ -24,7 +25,6 @@ except Exception:
     is_tensorboard_available = False
 
 from dataloader import get_loader
-from model import Model
 
 torch.backends.cudnn.benchmark = True
 
@@ -48,6 +48,8 @@ def str2bool(s):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--arch', type=str, required=True,
+                        choices=['lenet', 'resnet_preact'])
     parser.add_argument('--dataset', type=str, required=True)
     parser.add_argument('--test_id', type=int, required=True)
     parser.add_argument('--outdir', type=str, required=True)
@@ -254,7 +256,8 @@ def main():
                                            True)
 
     # model
-    model = Model()
+    module = importlib.import_module('models.{}'.format(args.arch))
+    model = module.Model()
     model.cuda()
 
     criterion = nn.MSELoss(size_average=True)
