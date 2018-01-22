@@ -6,6 +6,7 @@
 * PyTorch
 * torchvision
 * [tensorboard-pytorch]( https://github.com/lanpa/tensorboard-pytorch ) (optional)
+* OpenCV
 
 
 ## Download the dataset and preprocess it
