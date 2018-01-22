@@ -78,7 +78,7 @@ def get_subject_data(subject_id, datadir, evaldir):
     for _, row in df.iterrows():
         day = row.day
         index = np.where(filenames[day] == row.filename)[0][0]
-        if not row.side == 'left':
+        if row.side == 'left':
             image = left_images[day][index]
             pose = convert_pose(left_poses[day][index])
             gaze = convert_gaze(left_gazes[day][index])
