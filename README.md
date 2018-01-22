@@ -17,6 +17,8 @@ $ tar xzvf MPIIGaze.tar.gz
 $ python preprocess_data.py --dataset MPIIGaze --outdir data
 ```
 
+**NOTE**: `preprocess_data.py` is currently not working, due to the change of the dataset.
+
 
 ## Usage
 
