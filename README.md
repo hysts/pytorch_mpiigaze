@@ -32,8 +32,8 @@ $ python -u main.py --arch lenet --dataset data --test_id 0 --outdir results/00
 
 | Model           | Mean Test Angle Error [degree] | Training Time |
 |:----------------|:------------------------------:|--------------:|
-| LeNet           |              6.37              |      3m40s    |
-| ResNet-preact-8 |              5.76              |      7m27s    |
+| LeNet           |              6.43              |      3m40s    |
+| ResNet-preact-8 |              5.78              |      7m27s    |
 
 ```
 $ python -u main.py --arch lenet --dataset data --test_id 0 --outdir results/lenet/00 --batch_size 32 --base_lr 0.01 --momentum 0.9 --nesterov True --weight_decay 1e-4 --epochs 40 --milestones '[30, 35]' --lr_decay 0.1
