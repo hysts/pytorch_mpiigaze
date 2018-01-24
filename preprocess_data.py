@@ -110,7 +110,8 @@ def main():
     for subject_id in range(15):
         subject_id = 'p{:02}'.format(subject_id)
         datadir = os.path.join(args.dataset, 'Data', 'Normalized')
-        evaldir = os.path.join(args.dataset, 'Evaluation Subset')
+        evaldir = os.path.join(args.dataset, 'Evaluation Subset',
+                               'sample list for eye image')
         images, poses, gazes = get_subject_data(subject_id, datadir, evaldir)
 
         outpath = os.path.join(outdir, subject_id)
