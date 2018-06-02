@@ -13,7 +13,6 @@ import random
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 import torch.optim
 import torch.utils.data
 import torch.backends.cudnn
@@ -48,8 +47,8 @@ def str2bool(s):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--arch', type=str, required=True,
-                        choices=['lenet', 'resnet_preact'])
+    parser.add_argument(
+        '--arch', type=str, required=True, choices=['lenet', 'resnet_preact'])
     parser.add_argument('--dataset', type=str, required=True)
     parser.add_argument('--test_id', type=int, required=True)
     parser.add_argument('--outdir', type=str, required=True)
@@ -139,9 +138,9 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer):
                 images, normalize=True, scale_each=True)
             writer.add_image('Train/Image', image, epoch)
 
-        images = Variable(images.cuda())
-        poses = Variable(poses.cuda())
-        gazes = Variable(gazes.cuda())
+        images = images.cuda()
+        poses = poses.cuda()
+        gazes = gazes.cuda()
 
         optimizer.zero_grad()
 
@@ -154,8 +153,8 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer):
         angle_error = compute_angle_error(outputs, gazes).mean()
 
         num = images.size(0)
-        loss_meter.update(loss.data[0], num)
-        angle_error_meter.update(angle_error.data[0], num)
+        loss_meter.update(loss.item(), num)
+        angle_error_meter.update(angle_error.item(), num)
 
         if config['tensorboard']:
             writer.add_scalar('Train/RunningLoss', loss_meter.val, global_step)
@@ -196,18 +195,19 @@ def test(epoch, model, criterion, test_loader, config, writer):
                 images, normalize=True, scale_each=True)
             writer.add_image('Test/Image', image, epoch)
 
-        images = Variable(images.cuda(), volatile=True)
-        poses = Variable(poses.cuda(), volatile=True)
-        gazes = Variable(gazes.cuda(), volatile=True)
+        images = images.cuda()
+        poses = poses.cuda()
+        gazes = gazes.cuda()
 
-        outputs = model(images, poses)
+        with torch.no_grad():
+            outputs = model(images, poses)
         loss = criterion(outputs, gazes)
 
         angle_error = compute_angle_error(outputs, gazes).mean()
 
         num = images.size(0)
-        loss_meter.update(loss.data[0], num)
-        angle_error_meter.update(angle_error.data[0], num)
+        loss_meter.update(loss.item(), num)
+        angle_error_meter.update(angle_error.item(), num)
 
     logger.info('Epoch {} Loss {:.4f} AngleError {:.2f}'.format(
         epoch, loss_meter.avg, angle_error_meter.avg))
@@ -251,9 +251,8 @@ def main():
         json.dump(vars(args), fout, indent=2)
 
     # data loaders
-    train_loader, test_loader = get_loader(args.dataset, args.test_id,
-                                           args.batch_size, args.num_workers,
-                                           True)
+    train_loader, test_loader = get_loader(
+        args.dataset, args.test_id, args.batch_size, args.num_workers, True)
 
     # model
     module = importlib.import_module('models.{}'.format(args.arch))
@@ -270,9 +269,7 @@ def main():
         weight_decay=args.weight_decay,
         nesterov=args.nesterov)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
-        optimizer,
-        milestones=args.milestones,
-        gamma=args.lr_decay)
+        optimizer, milestones=args.milestones, gamma=args.lr_decay)
 
     config = {
         'tensorboard': args.tensorboard,

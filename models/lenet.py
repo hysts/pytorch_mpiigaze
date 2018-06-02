@@ -3,15 +3,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
 
 
 def initialize_weights(module):
     if isinstance(module, nn.Conv2d):
-        nn.init.constant(module.bias, 0)
+        nn.init.constant_(module.bias, 0)
     elif isinstance(module, nn.Linear):
-        nn.init.xavier_uniform(module.weight)
-        nn.init.constant(module.bias, 0)
+        nn.init.xavier_uniform_(module.weight)
+        nn.init.constant_(module.bias, 0)
+
 
 class Model(nn.Module):
     def __init__(self):
@@ -25,8 +25,8 @@ class Model(nn.Module):
         self._initialize_weight()
 
     def _initialize_weight(self):
-        nn.init.normal(self.conv1.weight, mean=0, std=0.1)
-        nn.init.normal(self.conv2.weight, mean=0, std=0.01)
+        nn.init.normal_(self.conv1.weight, mean=0, std=0.1)
+        nn.init.normal_(self.conv2.weight, mean=0, std=0.01)
         self.apply(initialize_weights)
 
     def forward(self, x, y):
