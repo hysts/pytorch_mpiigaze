@@ -25,7 +25,8 @@ def load_config():
     config.merge_from_list(args.options)
     if not torch.cuda.is_available():
         config.train.device = 'cpu'
-        config.train.dataloader.pin_memory = False
+        config.train.train_dataloader.pin_memory = False
+        config.train.val_dataloader.pin_memory = False
         config.test.device = 'cpu'
         config.test.dataloader.pin_memory = False
     config.freeze()
