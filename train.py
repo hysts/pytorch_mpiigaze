@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import pathlib
 import time
 import json
 from collections import OrderedDict
@@ -83,7 +83,8 @@ def parse_args():
         args.tensorboard_images = False
         args.tensorboard_parameters = False
 
-    assert os.path.exists(args.dataset)
+    dataset_dir = pathlib.Path(args.dataset)
+    assert dataset_dir.exists()
     args.milestones = json.loads(args.milestones)
 
     return args
@@ -241,11 +242,10 @@ def main():
     random.seed(seed)
 
     # create output directory
-    outdir = args.outdir
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
+    outdir = pathlib.Path(args.outdir)
+    outdir.mkdir(exist_ok=True, parents=True)
 
-    outpath = os.path.join(outdir, 'config.json')
+    outpath = outdir / 'config.json'
     with open(outpath, 'w') as fout:
         json.dump(vars(args), fout, indent=2)
 
@@ -293,11 +293,11 @@ def main():
             ('epoch', epoch),
             ('angle_error', angle_error),
         ])
-        model_path = os.path.join(outdir, 'model_state.pth')
+        model_path = outdir / 'model_state.pth'
         torch.save(state, model_path)
 
     if args.tensorboard:
-        outpath = os.path.join(outdir, 'all_scalars.json')
+        outpath = outdir / 'all_scalars.json'
         writer.export_scalars_to_json(outpath)
 
 

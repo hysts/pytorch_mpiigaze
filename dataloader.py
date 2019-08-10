@@ -1,4 +1,3 @@
-import os
 import numpy as np
 
 import torch
@@ -7,7 +6,7 @@ import torch.utils.data
 
 class MPIIGazeDataset(torch.utils.data.Dataset):
     def __init__(self, subject_id, dataset_dir):
-        path = os.path.join(dataset_dir, f'{subject_id}.npz')
+        path = dataset_dir / f'{subject_id}.npz'
         with np.load(path) as fin:
             self.images = fin['image']
             self.poses = fin['pose']
@@ -29,7 +28,7 @@ class MPIIGazeDataset(torch.utils.data.Dataset):
 
 
 def get_loader(dataset_dir, test_subject_id, batch_size, num_workers, use_gpu):
-    assert os.path.exists(dataset_dir)
+    assert dataset_dir.exists()
     assert test_subject_id in range(15)
     subject_ids = [f'p{index:02}' for index in range(15)]
     test_subject_id = subject_ids[test_subject_id]
