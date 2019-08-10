@@ -127,7 +127,7 @@ def compute_angle_error(preds, labels):
 def train(epoch, model, optimizer, criterion, train_loader, config, writer):
     global global_step
 
-    logger.info('Train {}'.format(epoch))
+    logger.info(f'Train {epoch}')
 
     model.train()
 
@@ -165,20 +165,13 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer):
             writer.add_scalar('Train/RunningLoss', loss_meter.val, global_step)
 
         if step % 100 == 0:
-            logger.info('Epoch {} Step {}/{} '
-                        'Loss {:.4f} ({:.4f}) '
-                        'AngleError {:.2f} ({:.2f})'.format(
-                            epoch,
-                            step,
-                            len(train_loader),
-                            loss_meter.val,
-                            loss_meter.avg,
-                            angle_error_meter.val,
-                            angle_error_meter.avg,
-                        ))
+            logger.info(f'Epoch {epoch} Step {step}/{len(train_loader)} '
+                        f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f}) '
+                        f'AngleError {angle_error_meter.val:.2f} '
+                        f'({angle_error_meter.avg:.2f})')
 
     elapsed = time.time() - start
-    logger.info('Elapsed {:.2f}'.format(elapsed))
+    logger.info(f'Elapsed {elapsed:.2f}')
 
     if config['tensorboard']:
         writer.add_scalar('Train/Loss', loss_meter.avg, epoch)
@@ -187,7 +180,7 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer):
 
 
 def test(epoch, model, criterion, test_loader, config, writer):
-    logger.info('Test {}'.format(epoch))
+    logger.info(f'Test {epoch}')
 
     model.eval()
 
@@ -215,11 +208,11 @@ def test(epoch, model, criterion, test_loader, config, writer):
         loss_meter.update(loss.item(), num)
         angle_error_meter.update(angle_error.item(), num)
 
-    logger.info('Epoch {} Loss {:.4f} AngleError {:.2f}'.format(
-        epoch, loss_meter.avg, angle_error_meter.avg))
+    logger.info(f'Epoch {epoch} Loss {loss_meter.avg:.4f} '
+                f'AngleError {angle_error_meter.avg:.2f}')
 
     elapsed = time.time() - start
-    logger.info('Elapsed {:.2f}'.format(elapsed))
+    logger.info(f'Elapsed {elapsed:.2f}')
 
     if config['tensorboard']:
         if epoch > 0:
@@ -262,7 +255,7 @@ def main():
                                            True)
 
     # model
-    module = importlib.import_module('models.{}'.format(args.arch))
+    module = importlib.import_module(f'models.{args.arch}')
     model = module.Model()
     model.cuda()
 

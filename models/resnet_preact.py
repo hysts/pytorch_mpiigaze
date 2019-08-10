@@ -101,7 +101,7 @@ class Model(nn.Module):
     def _make_stage(self, in_channels, out_channels, n_blocks, block, stride):
         stage = nn.Sequential()
         for index in range(n_blocks):
-            block_name = 'block{}'.format(index + 1)
+            block_name = f'block{index + 1}'
             if index == 0:
                 stage.add_module(
                     block_name, block(in_channels, out_channels,
