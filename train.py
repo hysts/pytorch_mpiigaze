@@ -247,7 +247,8 @@ def main():
         json.dump(vars(args), fout, indent=2)
 
     # data loaders
-    train_loader, test_loader = get_loader(args.dataset, args.test_id,
+    dataset_dir = pathlib.Path(args.dataset)
+    train_loader, test_loader = get_loader(dataset_dir, args.test_id,
                                            args.batch_size, args.num_workers,
                                            True)
 
