@@ -272,10 +272,6 @@ def main():
         model_path = outdir / 'model_state.pth'
         torch.save(state, model_path)
 
-    if args.tensorboard:
-        outpath = outdir / 'all_scalars.json'
-        writer.export_scalars_to_json(outpath)
-
 
 if __name__ == '__main__':
     main()
