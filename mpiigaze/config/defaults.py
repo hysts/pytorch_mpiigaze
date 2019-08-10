@@ -51,10 +51,13 @@ config.scheduler.lr_decay = 0.1
 config.scheduler.lr_min_factor = 0.001
 
 # train data loader
-config.train.dataloader = ConfigNode()
-config.train.dataloader.num_workers = 2
-config.train.dataloader.drop_last = True
-config.train.dataloader.pin_memory = False
+config.train.train_dataloader = ConfigNode()
+config.train.train_dataloader.num_workers = 2
+config.train.train_dataloader.drop_last = True
+config.train.train_dataloader.pin_memory = False
+config.train.val_dataloader = ConfigNode()
+config.train.val_dataloader.num_workers = 1
+config.train.val_dataloader.pin_memory = False
 
 # test config
 config.test = ConfigNode()

@@ -10,16 +10,16 @@ def create_dataloader(config, is_train):
             train_dataset,
             batch_size=config.train.batch_size,
             shuffle=True,
-            num_workers=config.train.dataloader.num_workers,
-            pin_memory=config.train.dataloader.pin_memory,
-            drop_last=config.train.dataloader.drop_last,
+            num_workers=config.train.train_dataloader.num_workers,
+            pin_memory=config.train.train_dataloader.pin_memory,
+            drop_last=config.train.train_dataloader.drop_last,
         )
         val_loader = torch.utils.data.DataLoader(
             val_dataset,
             batch_size=config.train.batch_size,
             shuffle=False,
-            num_workers=config.train.dataloader.num_workers,
-            pin_memory=config.train.dataloader.pin_memory,
+            num_workers=config.train.val_dataloader.num_workers,
+            pin_memory=config.train.val_dataloader.pin_memory,
             drop_last=False,
         )
         return train_loader, val_loader
