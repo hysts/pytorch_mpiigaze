@@ -24,11 +24,10 @@ def convert_gaze(vect):
 
 
 def get_eval_info(subject_id, evaldir):
-    df = pd.read_csv(
-        os.path.join(evaldir, '{}.txt'.format(subject_id)),
-        delimiter=' ',
-        header=None,
-        names=['path', 'side'])
+    df = pd.read_csv(os.path.join(evaldir, '{}.txt'.format(subject_id)),
+                     delimiter=' ',
+                     header=None,
+                     names=['path', 'side'])
     df['day'] = df.path.apply(lambda path: path.split('/')[0])
     df['filename'] = df.path.apply(lambda path: path.split('/')[1])
     df = df.drop(['path'], axis=1)
@@ -46,8 +45,9 @@ def get_subject_data(subject_id, datadir, evaldir):
     dirpath = os.path.join(datadir, subject_id)
     for name in sorted(os.listdir(dirpath)):
         path = os.path.join(dirpath, name)
-        matdata = scipy.io.loadmat(
-            path, struct_as_record=False, squeeze_me=True)
+        matdata = scipy.io.loadmat(path,
+                                   struct_as_record=False,
+                                   squeeze_me=True)
         data = matdata['data']
 
         day = os.path.splitext(name)[0]

@@ -46,8 +46,10 @@ def str2bool(s):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--arch', type=str, required=True, choices=['lenet', 'resnet_preact'])
+    parser.add_argument('--arch',
+                        type=str,
+                        required=True,
+                        choices=['lenet', 'resnet_preact'])
     parser.add_argument('--dataset', type=str, required=True)
     parser.add_argument('--test_id', type=int, required=True)
     parser.add_argument('--outdir', type=str, required=True)
@@ -65,10 +67,13 @@ def parse_args():
     parser.add_argument('--lr_decay', type=float, default=0.1)
 
     # TensorBoard
-    parser.add_argument(
-        '--tensorboard', dest='tensorboard', action='store_true', default=True)
-    parser.add_argument(
-        '--no-tensorboard', dest='tensorboard', action='store_false')
+    parser.add_argument('--tensorboard',
+                        dest='tensorboard',
+                        action='store_true',
+                        default=True)
+    parser.add_argument('--no-tensorboard',
+                        dest='tensorboard',
+                        action='store_false')
     parser.add_argument('--tensorboard_images', action='store_true')
     parser.add_argument('--tensorboard_parameters', action='store_true')
 
@@ -133,8 +138,9 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer):
         global_step += 1
 
         if config['tensorboard_images'] and step == 0:
-            image = torchvision.utils.make_grid(
-                images, normalize=True, scale_each=True)
+            image = torchvision.utils.make_grid(images,
+                                                normalize=True,
+                                                scale_each=True)
             writer.add_image('Train/Image', image, epoch)
 
         images = images.cuda()
@@ -190,8 +196,9 @@ def test(epoch, model, criterion, test_loader, config, writer):
     start = time.time()
     for step, (images, poses, gazes) in enumerate(test_loader):
         if config['tensorboard_images'] and epoch == 0 and step == 0:
-            image = torchvision.utils.make_grid(
-                images, normalize=True, scale_each=True)
+            image = torchvision.utils.make_grid(images,
+                                                normalize=True,
+                                                scale_each=True)
             writer.add_image('Test/Image', image, epoch)
 
         images = images.cuda()
@@ -250,8 +257,9 @@ def main():
         json.dump(vars(args), fout, indent=2)
 
     # data loaders
-    train_loader, test_loader = get_loader(
-        args.dataset, args.test_id, args.batch_size, args.num_workers, True)
+    train_loader, test_loader = get_loader(args.dataset, args.test_id,
+                                           args.batch_size, args.num_workers,
+                                           True)
 
     # model
     module = importlib.import_module('models.{}'.format(args.arch))
@@ -261,12 +269,11 @@ def main():
     criterion = nn.MSELoss(size_average=True)
 
     # optimizer
-    optimizer = torch.optim.SGD(
-        model.parameters(),
-        lr=args.base_lr,
-        momentum=args.momentum,
-        weight_decay=args.weight_decay,
-        nesterov=args.nesterov)
+    optimizer = torch.optim.SGD(model.parameters(),
+                                lr=args.base_lr,
+                                momentum=args.momentum,
+                                weight_decay=args.weight_decay,
+                                nesterov=args.nesterov)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=args.milestones, gamma=args.lr_decay)
 

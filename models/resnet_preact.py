@@ -18,33 +18,30 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
 
         self.bn1 = nn.BatchNorm2d(in_channels)
-        self.conv1 = nn.Conv2d(
-            in_channels,
-            out_channels,
-            kernel_size=3,
-            stride=stride,
-            padding=1,
-            bias=False)
+        self.conv1 = nn.Conv2d(in_channels,
+                               out_channels,
+                               kernel_size=3,
+                               stride=stride,
+                               padding=1,
+                               bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels)
-        self.conv2 = nn.Conv2d(
-            out_channels,
-            out_channels,
-            kernel_size=3,
-            stride=1,
-            padding=1,
-            bias=False)
+        self.conv2 = nn.Conv2d(out_channels,
+                               out_channels,
+                               kernel_size=3,
+                               stride=1,
+                               padding=1,
+                               bias=False)
 
         self.shortcut = nn.Sequential()
         if in_channels != out_channels:
             self.shortcut.add_module(
                 'conv',
-                nn.Conv2d(
-                    in_channels,
-                    out_channels,
-                    kernel_size=1,
-                    stride=stride,
-                    padding=0,
-                    bias=False))
+                nn.Conv2d(in_channels,
+                          out_channels,
+                          kernel_size=1,
+                          stride=stride,
+                          padding=0,
+                          bias=False))
 
     def forward(self, x):
         x = F.relu(self.bn1(x), inplace=True)
@@ -68,32 +65,28 @@ class Model(nn.Module):
 
         n_channels = [base_channels, base_channels * 2, base_channels * 4]
 
-        self.conv = nn.Conv2d(
-            input_shape[1],
-            n_channels[0],
-            kernel_size=(3, 3),
-            stride=1,
-            padding=1,
-            bias=False)
+        self.conv = nn.Conv2d(input_shape[1],
+                              n_channels[0],
+                              kernel_size=(3, 3),
+                              stride=1,
+                              padding=1,
+                              bias=False)
 
-        self.stage1 = self._make_stage(
-            n_channels[0],
-            n_channels[0],
-            n_blocks_per_stage,
-            BasicBlock,
-            stride=1)
-        self.stage2 = self._make_stage(
-            n_channels[0],
-            n_channels[1],
-            n_blocks_per_stage,
-            BasicBlock,
-            stride=2)
-        self.stage3 = self._make_stage(
-            n_channels[1],
-            n_channels[2],
-            n_blocks_per_stage,
-            BasicBlock,
-            stride=2)
+        self.stage1 = self._make_stage(n_channels[0],
+                                       n_channels[0],
+                                       n_blocks_per_stage,
+                                       BasicBlock,
+                                       stride=1)
+        self.stage2 = self._make_stage(n_channels[0],
+                                       n_channels[1],
+                                       n_blocks_per_stage,
+                                       BasicBlock,
+                                       stride=2)
+        self.stage3 = self._make_stage(n_channels[1],
+                                       n_channels[2],
+                                       n_blocks_per_stage,
+                                       BasicBlock,
+                                       stride=2)
         self.bn = nn.BatchNorm2d(n_channels[2])
 
         # compute conv feature size
@@ -111,8 +104,8 @@ class Model(nn.Module):
             block_name = 'block{}'.format(index + 1)
             if index == 0:
                 stage.add_module(
-                    block_name, block(
-                        in_channels, out_channels, stride=stride))
+                    block_name, block(in_channels, out_channels,
+                                      stride=stride))
             else:
                 stage.add_module(block_name,
                                  block(out_channels, out_channels, stride=1))
