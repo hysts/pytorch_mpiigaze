@@ -256,7 +256,7 @@ def main():
     model = module.Model()
     model.cuda()
 
-    criterion = nn.MSELoss(size_average=True)
+    criterion = nn.MSELoss(reduction='mean')
 
     # optimizer
     optimizer = torch.optim.SGD(model.parameters(),
