@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 
-import pathlib
-import time
-import json
-from collections import OrderedDict
-import importlib
-import logging
 import argparse
-import numpy as np
+import importlib
+import json
+import logging
+import pathlib
 import random
+import time
+from collections import OrderedDict
 
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim
-import torch.utils.data
-import torch.backends.cudnn
 import torchvision.utils
 try:
     from tensorboardX import SummaryWriter

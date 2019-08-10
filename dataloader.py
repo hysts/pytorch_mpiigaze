@@ -1,7 +1,5 @@
 import numpy as np
-
 import torch
-import torch.utils.data
 
 
 class MPIIGazeDataset(torch.utils.data.Dataset):
