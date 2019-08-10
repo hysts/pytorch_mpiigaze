@@ -114,8 +114,8 @@ def validate(epoch, model, criterion, val_loader, config, writer, logger):
             loss_meter.update(loss.item(), num)
             angle_error_meter.update(angle_error.item(), num)
 
-    logger.info(f'Epoch {epoch} Loss {loss_meter.avg:.4f} '
-                f'AngleError {angle_error_meter.avg:.2f}')
+    logger.info(f'Epoch {epoch} loss {loss_meter.avg:.4f} '
+                f'angle error {angle_error_meter.avg:.2f}')
 
     elapsed = time.time() - start
     logger.info(f'Elapsed {elapsed:.2f}')
