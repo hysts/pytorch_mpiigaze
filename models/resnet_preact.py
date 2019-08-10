@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 def initialize_weights(module):
     if isinstance(module, nn.Conv2d):
-        nn.init.kaiming_normal_(module.weight.data, mode='fan_out')
+        nn.init.kaiming_normal_(module.weight, mode='fan_out')
     elif isinstance(module, nn.BatchNorm2d):
         nn.init.constant_(module.weight, 1)
         nn.init.constant_(module.bias, 0)
