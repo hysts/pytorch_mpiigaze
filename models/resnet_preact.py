@@ -15,7 +15,7 @@ def initialize_weights(module):
 
 class BasicBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride):
-        super(BasicBlock, self).__init__()
+        super().__init__()
 
         self.bn1 = nn.BatchNorm2d(in_channels)
         self.conv1 = nn.Conv2d(in_channels,
@@ -54,7 +54,7 @@ class BasicBlock(nn.Module):
 
 class Model(nn.Module):
     def __init__(self):
-        super(Model, self).__init__()
+        super().__init__()
 
         depth = 8
         base_channels = 16

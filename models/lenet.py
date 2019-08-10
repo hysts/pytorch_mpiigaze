@@ -13,7 +13,7 @@ def initialize_weights(module):
 
 class Model(nn.Module):
     def __init__(self):
-        super(Model, self).__init__()
+        super().__init__()
 
         self.conv1 = nn.Conv2d(1, 20, kernel_size=5, stride=1, padding=0)
         self.conv2 = nn.Conv2d(20, 50, kernel_size=5, stride=1, padding=0)
