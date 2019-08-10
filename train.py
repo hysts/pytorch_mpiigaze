@@ -5,7 +5,6 @@ import importlib
 import json
 import logging
 import pathlib
-import random
 import time
 from collections import OrderedDict
 
@@ -20,6 +19,7 @@ except Exception:
     is_tensorboard_available = False
 
 from mpiigaze.dataloader import get_loader
+from mpiigaze.utils import set_seeds
 
 torch.backends.cudnn.benchmark = True
 
@@ -233,10 +233,7 @@ def main():
     writer = SummaryWriter() if args.tensorboard else None
 
     # set random seed
-    seed = args.seed
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
+    set_seeds(args.seed)
 
     # create output directory
     outdir = pathlib.Path(args.outdir)
