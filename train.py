@@ -11,11 +11,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.utils
-try:
-    from tensorboardX import SummaryWriter
-    is_tensorboard_available = True
-except Exception:
-    is_tensorboard_available = False
+from tensorboardX import SummaryWriter
 
 from mpiigaze.dataloader import get_loader
 from mpiigaze.utils import set_seeds, AverageMeter
@@ -69,10 +65,6 @@ def parse_args():
     parser.add_argument('--tensorboard_parameters', action='store_true')
 
     args = parser.parse_args()
-    if not is_tensorboard_available:
-        args.tensorboard = False
-        args.tensorboard_images = False
-        args.tensorboard_parameters = False
 
     dataset_dir = pathlib.Path(args.dataset)
     assert dataset_dir.exists()
