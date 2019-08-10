@@ -1,25 +1,21 @@
 #!/usr/bin/env python
 
 import pathlib
-import time
-
 import torch
 import torch.nn as nn
 
 from mpiigaze.dataloader import create_dataloader
-from mpiigaze.logger import create_logger
 from mpiigaze.models import create_model
 from mpiigaze.utils import (load_config, compute_angle_error, AverageMeter)
 
 
-def test(model, criterion, test_loader, config, logger):
+def test(model, criterion, test_loader, config):
     model.eval()
 
     device = torch.device(config.test.device)
 
     loss_meter = AverageMeter()
     angle_error_meter = AverageMeter()
-    start = time.time()
 
     with torch.no_grad():
         for step, (images, poses, gazes) in enumerate(test_loader):
@@ -36,24 +32,14 @@ def test(model, criterion, test_loader, config, logger):
             loss_meter.update(loss.item(), num)
             angle_error_meter.update(angle_error.item(), num)
 
-    logger.info(f'loss {loss_meter.avg:.4f} '
-                f'angle error {angle_error_meter.avg:.2f}')
-
-    elapsed = time.time() - start
-    logger.info(f'Elapsed {elapsed:.2f}')
+    return angle_error_meter.avg
 
 
 def main():
     config = load_config()
 
     outdir = pathlib.Path(config.test.outdir)
-    if outdir.exists():
-        raise RuntimeError(
-            f'Output directory `{outdir.as_posix()}` already exists')
     outdir.mkdir(exist_ok=True, parents=True)
-
-    logger = create_logger(name=__name__, outdir=outdir, filename='log.txt')
-    logger.info(config)
 
     test_loader = create_dataloader(config, is_train=False)
 
@@ -62,7 +48,11 @@ def main():
     model.load_state_dict(ckpt['model'])
     criterion = nn.MSELoss(reduction='mean')
 
-    test(model, criterion, test_loader, config, logger)
+    angle_error = test(model, criterion, test_loader, config)
+
+    outpath = outdir / 'results.txt'
+    with open(outpath, 'w') as fout:
+        fout.write(f'{angle_error}')
 
 
 if __name__ == '__main__':
