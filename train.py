@@ -1,67 +1,20 @@
 #!/usr/bin/env python
 
-import argparse
 import importlib
 import pathlib
 import time
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.utils
 from tensorboardX import SummaryWriter
 
-from mpiigaze.config import get_default_config
 from mpiigaze.dataloader import create_dataloader
-from mpiigaze.utils import set_seeds, AverageMeter
+from mpiigaze.utils import (set_seeds, load_config, save_config,
+                            compute_angle_error, AverageMeter)
 from mpiigaze.logger import create_logger
 
 global_step = 0
-
-
-def load_config():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str)
-    parser.add_argument('--resume', type=str, default='')
-    parser.add_argument('options', default=None, nargs=argparse.REMAINDER)
-    args = parser.parse_args()
-
-    config = get_default_config()
-    if args.config is not None:
-        config.merge_from_file(args.config)
-    config.merge_from_list(args.options)
-    if not torch.cuda.is_available():
-        config.train.device = 'cpu'
-        config.train.dataloader.pin_memory = False
-    if args.resume != '':
-        config_path = pathlib.Path(args.resume) / 'config.yaml'
-        config.merge_from_file(config_path.as_posix())
-        config.merge_from_list(['train.resume', True])
-    config.freeze()
-    return config
-
-
-def save_config(config, outdir):
-    with open(outdir / 'config.yaml', 'w') as fout:
-        fout.write(str(config))
-
-
-def convert_to_unit_vector(angles):
-    x = -torch.cos(angles[:, 0]) * torch.sin(angles[:, 1])
-    y = -torch.sin(angles[:, 0])
-    z = -torch.cos(angles[:, 1]) * torch.cos(angles[:, 1])
-    norm = torch.sqrt(x**2 + y**2 + z**2)
-    x /= norm
-    y /= norm
-    z /= norm
-    return x, y, z
-
-
-def compute_angle_error(preds, labels):
-    pred_x, pred_y, pred_z = convert_to_unit_vector(preds)
-    label_x, label_y, label_z = convert_to_unit_vector(labels)
-    angles = pred_x * label_x + pred_y * label_y + pred_z * label_z
-    return torch.acos(angles) * 180 / np.pi
 
 
 def train(epoch, model, optimizer, scheduler, criterion, train_loader, config,
@@ -238,12 +191,12 @@ def main():
 
         state = {
             'config': config,
-            'state_dict': model.state_dict(),
+            'model': model.state_dict(),
             'optimizer': optimizer.state_dict(),
             'epoch': epoch,
             'angle_error': angle_error,
         }
-        model_path = outdir / 'model_state.pth'
+        model_path = outdir / 'checkpoint.pth'
         torch.save(state, model_path)
 
 
