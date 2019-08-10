@@ -132,26 +132,27 @@ def test(epoch, model, criterion, test_loader, config, writer, logger):
     loss_meter = AverageMeter()
     angle_error_meter = AverageMeter()
     start = time.time()
-    for step, (images, poses, gazes) in enumerate(test_loader):
-        if config.train.use_tensorboard and config.tensorboard.test_images and epoch == 0 and step == 0:
-            image = torchvision.utils.make_grid(images,
-                                                normalize=True,
-                                                scale_each=True)
-            writer.add_image('Test/Image', image, epoch)
 
-        images = images.to(device)
-        poses = poses.to(device)
-        gazes = gazes.to(device)
+    with torch.no_grad():
+        for step, (images, poses, gazes) in enumerate(test_loader):
+            if config.train.use_tensorboard and config.tensorboard.test_images and epoch == 0 and step == 0:
+                image = torchvision.utils.make_grid(images,
+                                                    normalize=True,
+                                                    scale_each=True)
+                writer.add_image('Test/Image', image, epoch)
 
-        with torch.no_grad():
+            images = images.to(device)
+            poses = poses.to(device)
+            gazes = gazes.to(device)
+
             outputs = model(images, poses)
-        loss = criterion(outputs, gazes)
+            loss = criterion(outputs, gazes)
 
-        angle_error = compute_angle_error(outputs, gazes).mean()
+            angle_error = compute_angle_error(outputs, gazes).mean()
 
-        num = images.size(0)
-        loss_meter.update(loss.item(), num)
-        angle_error_meter.update(angle_error.item(), num)
+            num = images.size(0)
+            loss_meter.update(loss.item(), num)
+            angle_error_meter.update(angle_error.item(), num)
 
     logger.info(f'Epoch {epoch} Loss {loss_meter.avg:.4f} '
                 f'AngleError {angle_error_meter.avg:.2f}')
