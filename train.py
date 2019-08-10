@@ -3,7 +3,6 @@
 import argparse
 import importlib
 import json
-import logging
 import pathlib
 import time
 from collections import OrderedDict
@@ -20,14 +19,9 @@ except Exception:
 
 from mpiigaze.dataloader import get_loader
 from mpiigaze.utils import set_seeds
+from mpiigaze.logger import create_logger
 
 torch.backends.cudnn.benchmark = True
-
-logging.basicConfig(
-    format='[%(asctime)s %(name)s %(levelname)s] - %(message)s',
-    datefmt='%Y/%m/%d %H:%M:%S',
-    level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 global_step = 0
 
@@ -122,7 +116,8 @@ def compute_angle_error(preds, labels):
     return torch.acos(angles) * 180 / np.pi
 
 
-def train(epoch, model, optimizer, criterion, train_loader, config, writer):
+def train(epoch, model, optimizer, criterion, train_loader, config, writer,
+          logger):
     global global_step
 
     logger.info(f'Train {epoch}')
@@ -177,7 +172,7 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer):
         writer.add_scalar('Train/Time', elapsed, epoch)
 
 
-def test(epoch, model, criterion, test_loader, config, writer):
+def test(epoch, model, criterion, test_loader, config, writer, logger):
     logger.info(f'Test {epoch}')
 
     model.eval()
@@ -227,7 +222,6 @@ def test(epoch, model, criterion, test_loader, config, writer):
 
 def main():
     args = parse_args()
-    logger.info(json.dumps(vars(args), indent=2))
 
     # TensorBoard SummaryWriter
     writer = SummaryWriter() if args.tensorboard else None
@@ -238,6 +232,9 @@ def main():
     # create output directory
     outdir = pathlib.Path(args.outdir)
     outdir.mkdir(exist_ok=True, parents=True)
+
+    logger = create_logger(__name__, outdir=outdir, filename='log.txt')
+    logger.info(json.dumps(vars(args), indent=2))
 
     outpath = outdir / 'config.json'
     with open(outpath, 'w') as fout:
@@ -272,14 +269,15 @@ def main():
     }
 
     # run test before start training
-    test(0, model, criterion, test_loader, config, writer)
+    test(0, model, criterion, test_loader, config, writer, logger)
 
     for epoch in range(1, args.epochs + 1):
         scheduler.step()
 
-        train(epoch, model, optimizer, criterion, train_loader, config, writer)
+        train(epoch, model, optimizer, criterion, train_loader, config, writer,
+              logger)
         angle_error = test(epoch, model, criterion, test_loader, config,
-                           writer)
+                           writer, logger)
 
         state = OrderedDict([
             ('args', vars(args)),
