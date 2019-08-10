@@ -19,7 +19,7 @@ try:
 except Exception:
     is_tensorboard_available = False
 
-from dataloader import get_loader
+from mpiigaze.dataloader import get_loader
 
 torch.backends.cudnn.benchmark = True
 
@@ -253,7 +253,7 @@ def main():
                                            True)
 
     # model
-    module = importlib.import_module(f'models.{args.arch}')
+    module = importlib.import_module(f'mpiigaze.models.{args.arch}')
     model = module.Model()
     model.cuda()
 
