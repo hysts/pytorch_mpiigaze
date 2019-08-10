@@ -37,7 +37,7 @@ def save_config(config, outdir):
         fout.write(str(config))
 
 
-def _convert_to_unit_vector(angles):
+def convert_to_unit_vector(angles):
     x = -torch.cos(angles[:, 0]) * torch.sin(angles[:, 1])
     y = -torch.sin(angles[:, 0])
     z = -torch.cos(angles[:, 1]) * torch.cos(angles[:, 1])
@@ -49,8 +49,8 @@ def _convert_to_unit_vector(angles):
 
 
 def compute_angle_error(preds, labels):
-    pred_x, pred_y, pred_z = _convert_to_unit_vector(preds)
-    label_x, label_y, label_z = _convert_to_unit_vector(labels)
+    pred_x, pred_y, pred_z = convert_to_unit_vector(preds)
+    label_x, label_y, label_z = convert_to_unit_vector(labels)
     angles = pred_x * label_x + pred_y * label_y + pred_z * label_z
     return torch.acos(angles) * 180 / np.pi
 
