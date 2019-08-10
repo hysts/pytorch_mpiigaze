@@ -18,7 +18,7 @@ except Exception:
     is_tensorboard_available = False
 
 from mpiigaze.dataloader import get_loader
-from mpiigaze.utils import set_seeds
+from mpiigaze.utils import set_seeds, AverageMeter
 from mpiigaze.logger import create_logger
 
 torch.backends.cudnn.benchmark = True
@@ -79,23 +79,6 @@ def parse_args():
     args.milestones = json.loads(args.milestones)
 
     return args
-
-
-class AverageMeter:
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, num):
-        self.val = val
-        self.sum += val * num
-        self.count += num
-        self.avg = self.sum / self.count
 
 
 def convert_to_unit_vector(angles):
