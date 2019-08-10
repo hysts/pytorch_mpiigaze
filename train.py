@@ -202,6 +202,9 @@ def main():
             model_path = outdir / f'checkpoint_{epoch:04}.pth'
             torch.save(state, model_path)
 
+    if writer is not None:
+        writer.close()
+
 
 if __name__ == '__main__':
     main()
