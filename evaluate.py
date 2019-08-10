@@ -1,38 +1,35 @@
 #!/usr/bin/env python
 
 import pathlib
+import numpy as np
 import torch
-import torch.nn as nn
+import tqdm
 
 from mpiigaze.dataloader import create_dataloader
 from mpiigaze.models import create_model
-from mpiigaze.utils import (load_config, compute_angle_error, AverageMeter)
+from mpiigaze.utils import (load_config, compute_angle_error)
 
 
-def test(model, criterion, test_loader, config):
+def test(model, test_loader, config):
     model.eval()
-
     device = torch.device(config.test.device)
 
-    loss_meter = AverageMeter()
-    angle_error_meter = AverageMeter()
-
+    preds = []
+    gts = []
     with torch.no_grad():
-        for step, (images, poses, gazes) in enumerate(test_loader):
+        for images, poses, gazes in tqdm.tqdm(test_loader):
             images = images.to(device)
             poses = poses.to(device)
             gazes = gazes.to(device)
 
             outputs = model(images, poses)
-            loss = criterion(outputs, gazes)
+            preds.append(outputs.cpu())
+            gts.append(gazes.cpu())
 
-            angle_error = compute_angle_error(outputs, gazes).mean()
-
-            num = images.size(0)
-            loss_meter.update(loss.item(), num)
-            angle_error_meter.update(angle_error.item(), num)
-
-    return angle_error_meter.avg
+    preds = torch.cat(preds)
+    gts = torch.cat(gts)
+    angle_error = float(compute_angle_error(preds, gts).mean())
+    return preds, gts, angle_error
 
 
 def main():
@@ -46,11 +43,14 @@ def main():
     model = create_model(config)
     ckpt = torch.load(config.test.checkpoint, map_location='cpu')
     model.load_state_dict(ckpt['model'])
-    criterion = nn.MSELoss(reduction='mean')
 
-    angle_error = test(model, criterion, test_loader, config)
+    preds, gts, angle_error = test(model, test_loader, config)
 
-    outpath = outdir / 'results.txt'
+    outpath = outdir / 'preds.npy'
+    np.save(outpath, preds.numpy())
+    outpath = outdir / 'gts.npy'
+    np.save(outpath, gts.numpy())
+    outpath = outdir / 'error.txt'
     with open(outpath, 'w') as fout:
         fout.write(f'{angle_error}')
 
