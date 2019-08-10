@@ -72,6 +72,8 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer,
 
     model.train()
 
+    device = torch.device(config.train.device)
+
     loss_meter = AverageMeter()
     angle_error_meter = AverageMeter()
     start = time.time()
@@ -84,9 +86,9 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer,
                                                 scale_each=True)
             writer.add_image('Train/Image', image, epoch)
 
-        images = images.cuda()
-        poses = poses.cuda()
-        gazes = gazes.cuda()
+        images = images.to(device)
+        poses = poses.to(device)
+        gazes = gazes.to(device)
 
         optimizer.zero_grad()
 
@@ -125,6 +127,8 @@ def test(epoch, model, criterion, test_loader, config, writer, logger):
 
     model.eval()
 
+    device = torch.device(config.train.device)
+
     loss_meter = AverageMeter()
     angle_error_meter = AverageMeter()
     start = time.time()
@@ -135,9 +139,9 @@ def test(epoch, model, criterion, test_loader, config, writer, logger):
                                                 scale_each=True)
             writer.add_image('Test/Image', image, epoch)
 
-        images = images.cuda()
-        poses = poses.cuda()
-        gazes = gazes.cuda()
+        images = images.to(device)
+        poses = poses.to(device)
+        gazes = gazes.to(device)
 
         with torch.no_grad():
             outputs = model(images, poses)
@@ -204,10 +208,11 @@ def main():
                                            config.train.dataloader.num_workers,
                                            True)
 
+    device = torch.device(config.train.device)
     # model
     module = importlib.import_module(f'mpiigaze.models.{config.model.name}')
     model = module.Model()
-    model.cuda()
+    model.to(device)
 
     criterion = nn.MSELoss(reduction='mean')
 
