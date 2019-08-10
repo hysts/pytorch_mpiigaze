@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import os
 import argparse
+import pathlib
 import numpy as np
 import pandas as pd
 import scipy.io
@@ -24,10 +24,8 @@ def convert_gaze(vect):
 
 
 def get_eval_info(subject_id, evaldir):
-    df = pd.read_csv(os.path.join(evaldir, '{}.txt'.format(subject_id)),
-                     delimiter=' ',
-                     header=None,
-                     names=['path', 'side'])
+    path = evaldir / f'{subject_id}.txt'
+    df = pd.read_csv(path, delimiter=' ', header=None, names=['path', 'side'])
     df['day'] = df.path.apply(lambda path: path.split('/')[0])
     df['filename'] = df.path.apply(lambda path: path.split('/')[1])
     df = df.drop(['path'], axis=1)
@@ -42,15 +40,14 @@ def get_subject_data(subject_id, datadir, evaldir):
     right_poses = {}
     right_gazes = {}
     filenames = {}
-    dirpath = os.path.join(datadir, subject_id)
-    for name in sorted(os.listdir(dirpath)):
-        path = os.path.join(dirpath, name)
-        matdata = scipy.io.loadmat(path,
+    dirpath = datadir / subject_id
+    for path in sorted(dirpath.glob('*')):
+        matdata = scipy.io.loadmat(path.as_posix(),
                                    struct_as_record=False,
                                    squeeze_me=True)
         data = matdata['data']
 
-        day = os.path.splitext(name)[0]
+        day = path.stem
         left_images[day] = data.left.image
         left_poses[day] = data.left.pose
         left_gazes[day] = data.left.gaze
@@ -102,18 +99,18 @@ def main():
     parser.add_argument('--outdir', type=str, required=True)
     args = parser.parse_args()
 
-    outdir = args.outdir
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
+    outdir = pathlib.Path(args.outdir)
+    outdir.mkdir(exist_ok=True, parents=True)
+
+    dataset_dir = pathlib.Path(args.dataset)
 
     for subject_id in range(15):
-        subject_id = 'p{:02}'.format(subject_id)
-        datadir = os.path.join(args.dataset, 'Data', 'Normalized')
-        evaldir = os.path.join(args.dataset, 'Evaluation Subset',
-                               'sample list for eye image')
+        subject_id = f'p{subject_id:02}'
+        datadir = dataset_dir / 'Data' / 'Normalized'
+        evaldir = dataset_dir / 'Evaluation Subset' / 'sample list for eye image'
         images, poses, gazes = get_subject_data(subject_id, datadir, evaldir)
 
-        outpath = os.path.join(outdir, subject_id)
+        outpath = outdir / subject_id
         np.savez(outpath, image=images, pose=poses, gaze=gazes)
 
 
