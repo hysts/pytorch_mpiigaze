@@ -3,7 +3,7 @@ from mpiigaze.config.config_node import ConfigNode
 config = ConfigNode()
 
 config.dataset = ConfigNode()
-config.dataset.dataset_dir = 'dataset/preprocessed'
+config.dataset.dataset_dir = 'datasets/preprocessed'
 
 config.model = ConfigNode()
 config.model.name = 'lenet'
