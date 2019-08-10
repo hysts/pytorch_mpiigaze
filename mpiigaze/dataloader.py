@@ -28,7 +28,7 @@ def create_dataloader(config, is_train):
         test_loader = torch.utils.data.DataLoader(
             test_dataset,
             batch_size=config.test.batch_size,
-            num_workers=config.test.datalaoder.num_workers,
+            num_workers=config.test.dataloader.num_workers,
             shuffle=False,
             pin_memory=config.test.dataloader.pin_memory,
             drop_last=False,
