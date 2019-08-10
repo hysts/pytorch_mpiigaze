@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import importlib
 import pathlib
 import time
 
@@ -12,6 +11,7 @@ from tensorboardX import SummaryWriter
 from mpiigaze.checkpoint import CheckPointer
 from mpiigaze.dataloader import create_dataloader
 from mpiigaze.logger import create_logger
+from mpiigaze.models import create_model
 from mpiigaze.utils import (set_seeds, load_config, save_config,
                             compute_angle_error, AverageMeter)
 
@@ -162,10 +162,7 @@ def main():
 
     train_loader, val_loader = create_dataloader(config, is_train=True)
 
-    device = torch.device(config.train.device)
-    module = importlib.import_module(f'mpiigaze.models.{config.model.name}')
-    model = module.Model()
-    model.to(device)
+    model = create_model(config)
 
     criterion = nn.MSELoss(reduction='mean')
 
