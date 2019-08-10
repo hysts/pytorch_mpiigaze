@@ -9,8 +9,6 @@ config.model = ConfigNode()
 config.model.name = 'lenet'
 
 config.train = ConfigNode()
-config.train.checkpoint = ''
-config.train.resume = False
 config.train.device = 'cuda'
 config.train.batch_size = 64
 # optimizer (options: sgd, adam, amsgrad)
@@ -20,7 +18,6 @@ config.train.momentum = 0.9
 config.train.nesterov = True
 config.train.weight_decay = 1e-4
 config.train.no_weight_decay_on_bn = False
-config.train.start_epoch = 0
 config.train.seed = 0
 config.train.val_first = True
 config.train.val_period = 1

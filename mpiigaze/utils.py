@@ -17,7 +17,6 @@ def set_seeds(seed):
 def load_config():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str)
-    parser.add_argument('--resume', type=str, default='')
     parser.add_argument('options', default=None, nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
@@ -30,10 +29,6 @@ def load_config():
         config.train.dataloader.pin_memory = False
         config.test.device = 'cpu'
         config.test.dataloader.pin_memory = False
-    if args.resume != '':
-        config_path = pathlib.Path(args.resume) / 'config.yaml'
-        config.merge_from_file(config_path.as_posix())
-        config.merge_from_list(['train.resume', True])
     config.freeze()
     return config
 

@@ -142,31 +142,19 @@ def main():
     set_seeds(config.train.seed)
 
     outdir = pathlib.Path(config.train.outdir)
-    if not config.train.resume and outdir.exists():
+    if outdir.exists():
         raise RuntimeError(
             f'Output directory `{outdir.as_posix()}` already exists')
     outdir.mkdir(exist_ok=True, parents=True)
-    if not config.train.resume:
-        save_config(config, outdir)
+    save_config(config, outdir)
 
     logger = create_logger(name=__name__, outdir=outdir, filename='log.txt')
     logger.info(config)
-
-    start_epoch = config.train.start_epoch
-    if config.train.use_tensorboard:
-        if start_epoch > 0:
-            writer = SummaryWriter(outdir.as_posix(),
-                                   purge_step=start_epoch + 1)
-        else:
-            writer = SummaryWriter(outdir.as_posix())
-    else:
-        writer = None
 
     train_loader, val_loader = create_dataloader(config, is_train=True)
 
     model = create_model(config)
     criterion = nn.MSELoss(reduction='mean')
-
     optimizer = create_optimizer(config, model)
     scheduler = create_scheduler(config, optimizer)
 
@@ -176,10 +164,16 @@ def main():
                                 checkpoint_dir=outdir,
                                 logger=logger)
 
+    # tensorboard
+    if config.train.use_tensorboard:
+        writer = SummaryWriter(outdir.as_posix())
+    else:
+        writer = None
+
     if config.train.val_first:
         validate(0, model, criterion, val_loader, config, writer, logger)
 
-    for epoch in range(start_epoch, config.scheduler.epochs):
+    for epoch in range(config.scheduler.epochs):
         epoch += 1
         train(epoch, model, optimizer, scheduler, criterion, train_loader,
               config, writer, logger)
