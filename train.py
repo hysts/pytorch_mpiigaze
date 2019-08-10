@@ -2,10 +2,8 @@
 
 import argparse
 import importlib
-import json
 import pathlib
 import time
-from collections import OrderedDict
 
 import numpy as np
 import torch
@@ -13,64 +11,39 @@ import torch.nn as nn
 import torchvision.utils
 from tensorboardX import SummaryWriter
 
+from mpiigaze.config import get_default_config
 from mpiigaze.dataloader import get_loader
 from mpiigaze.utils import set_seeds, AverageMeter
 from mpiigaze.logger import create_logger
 
-torch.backends.cudnn.benchmark = True
-
 global_step = 0
 
 
-def str2bool(s):
-    if s.lower() == 'true':
-        return True
-    elif s.lower() == 'false':
-        return False
-    else:
-        raise RuntimeError('Boolean value expected')
-
-
-def parse_args():
+def load_config():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--arch',
-                        type=str,
-                        required=True,
-                        choices=['lenet', 'resnet_preact'])
-    parser.add_argument('--dataset', type=str, required=True)
-    parser.add_argument('--test_id', type=int, required=True)
-    parser.add_argument('--outdir', type=str, required=True)
-    parser.add_argument('--seed', type=int, default=17)
-    parser.add_argument('--num_workers', type=int, default=7)
-
-    # optimizer
-    parser.add_argument('--epochs', type=int, default=40)
-    parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--base_lr', type=float, default=0.01)
-    parser.add_argument('--weight_decay', type=float, default=1e-4)
-    parser.add_argument('--momentum', type=float, default=0.9)
-    parser.add_argument('--nesterov', type=str2bool, default=True)
-    parser.add_argument('--milestones', type=str, default='[20, 30]')
-    parser.add_argument('--lr_decay', type=float, default=0.1)
-
-    # TensorBoard
-    parser.add_argument('--tensorboard',
-                        dest='tensorboard',
-                        action='store_true',
-                        default=True)
-    parser.add_argument('--no-tensorboard',
-                        dest='tensorboard',
-                        action='store_false')
-    parser.add_argument('--tensorboard_images', action='store_true')
-    parser.add_argument('--tensorboard_parameters', action='store_true')
-
+    parser.add_argument('--config', type=str)
+    parser.add_argument('--resume', type=str, default='')
+    parser.add_argument('options', default=None, nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
-    dataset_dir = pathlib.Path(args.dataset)
-    assert dataset_dir.exists()
-    args.milestones = json.loads(args.milestones)
+    config = get_default_config()
+    if args.config is not None:
+        config.merge_from_file(args.config)
+    config.merge_from_list(args.options)
+    if not torch.cuda.is_available():
+        config.train.device = 'cpu'
+        config.train.dataloader.pin_memory = False
+    if args.resume != '':
+        config_path = pathlib.Path(args.resume) / 'config.yaml'
+        config.merge_from_file(config_path.as_posix())
+        config.merge_from_list(['train.resume', True])
+    config.freeze()
+    return config
 
-    return args
+
+def save_config(config, outdir):
+    with open(outdir / 'config.yaml', 'w') as fout:
+        fout.write(str(config))
 
 
 def convert_to_unit_vector(angles):
@@ -105,7 +78,7 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer,
     for step, (images, poses, gazes) in enumerate(train_loader):
         global_step += 1
 
-        if config['tensorboard_images'] and step == 0:
+        if config.train.use_tensorboard and config.tensorboard.train_images and step == 0:
             image = torchvision.utils.make_grid(images,
                                                 normalize=True,
                                                 scale_each=True)
@@ -129,7 +102,7 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer,
         loss_meter.update(loss.item(), num)
         angle_error_meter.update(angle_error.item(), num)
 
-        if config['tensorboard']:
+        if config.train.use_tensorboard:
             writer.add_scalar('Train/RunningLoss', loss_meter.val, global_step)
 
         if step % 100 == 0:
@@ -141,7 +114,7 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer,
     elapsed = time.time() - start
     logger.info(f'Elapsed {elapsed:.2f}')
 
-    if config['tensorboard']:
+    if config.train.use_tensorboard:
         writer.add_scalar('Train/Loss', loss_meter.avg, epoch)
         writer.add_scalar('Train/AngleError', angle_error_meter.avg, epoch)
         writer.add_scalar('Train/Time', elapsed, epoch)
@@ -156,7 +129,7 @@ def test(epoch, model, criterion, test_loader, config, writer, logger):
     angle_error_meter = AverageMeter()
     start = time.time()
     for step, (images, poses, gazes) in enumerate(test_loader):
-        if config['tensorboard_images'] and epoch == 0 and step == 0:
+        if config.train.use_tensorboard and config.tensorboard.test_images and epoch == 0 and step == 0:
             image = torchvision.utils.make_grid(images,
                                                 normalize=True,
                                                 scale_each=True)
@@ -182,13 +155,13 @@ def test(epoch, model, criterion, test_loader, config, writer, logger):
     elapsed = time.time() - start
     logger.info(f'Elapsed {elapsed:.2f}')
 
-    if config['tensorboard']:
+    if config.train.use_tensorboard:
         if epoch > 0:
             writer.add_scalar('Test/Loss', loss_meter.avg, epoch)
             writer.add_scalar('Test/AngleError', angle_error_meter.avg, epoch)
         writer.add_scalar('Test/Time', elapsed, epoch)
 
-    if config['tensorboard_parameters']:
+    if config.tensorboard.model_params:
         for name, param in model.named_parameters():
             writer.add_histogram(name, param, global_step)
 
@@ -196,33 +169,43 @@ def test(epoch, model, criterion, test_loader, config, writer, logger):
 
 
 def main():
-    args = parse_args()
+    config = load_config()
 
-    # TensorBoard SummaryWriter
-    writer = SummaryWriter() if args.tensorboard else None
+    torch.backends.cudnn.benchmark = config.cudnn.benchmark
+    torch.backends.cudnn.deterministic = config.cudnn.deterministic
 
-    # set random seed
-    set_seeds(args.seed)
+    set_seeds(config.train.seed)
 
-    # create output directory
-    outdir = pathlib.Path(args.outdir)
+    outdir = pathlib.Path(config.train.outdir)
+    if not config.train.resume and outdir.exists():
+        raise RuntimeError(
+            f'Output directory `{outdir.as_posix()}` already exists')
     outdir.mkdir(exist_ok=True, parents=True)
+    if not config.train.resume:
+        save_config(config, outdir)
 
-    logger = create_logger(__name__, outdir=outdir, filename='log.txt')
-    logger.info(json.dumps(vars(args), indent=2))
+    logger = create_logger(name=__name__, outdir=outdir, filename='log.txt')
+    logger.info(config)
 
-    outpath = outdir / 'config.json'
-    with open(outpath, 'w') as fout:
-        json.dump(vars(args), fout, indent=2)
+    start_epoch = config.train.start_epoch
+    if config.train.use_tensorboard:
+        if start_epoch > 0:
+            writer = SummaryWriter(outdir.as_posix(),
+                                   purge_step=start_epoch + 1)
+        else:
+            writer = SummaryWriter(outdir.as_posix())
+    else:
+        writer = None
 
     # data loaders
-    dataset_dir = pathlib.Path(args.dataset)
-    train_loader, test_loader = get_loader(dataset_dir, args.test_id,
-                                           args.batch_size, args.num_workers,
+    dataset_dir = pathlib.Path(config.dataset.dataset_dir)
+    train_loader, test_loader = get_loader(dataset_dir, config.train.test_id,
+                                           config.train.batch_size,
+                                           config.train.dataloader.num_workers,
                                            True)
 
     # model
-    module = importlib.import_module(f'mpiigaze.models.{args.arch}')
+    module = importlib.import_module(f'mpiigaze.models.{config.model.name}')
     model = module.Model()
     model.cuda()
 
@@ -230,23 +213,19 @@ def main():
 
     # optimizer
     optimizer = torch.optim.SGD(model.parameters(),
-                                lr=args.base_lr,
-                                momentum=args.momentum,
-                                weight_decay=args.weight_decay,
-                                nesterov=args.nesterov)
+                                lr=config.train.base_lr,
+                                momentum=config.train.momentum,
+                                weight_decay=config.train.weight_decay,
+                                nesterov=config.train.nesterov)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
-        optimizer, milestones=args.milestones, gamma=args.lr_decay)
-
-    config = {
-        'tensorboard': args.tensorboard,
-        'tensorboard_images': args.tensorboard_images,
-        'tensorboard_parameters': args.tensorboard_parameters,
-    }
+        optimizer,
+        milestones=config.scheduler.milestones,
+        gamma=config.scheduler.lr_decay)
 
     # run test before start training
     test(0, model, criterion, test_loader, config, writer, logger)
 
-    for epoch in range(1, args.epochs + 1):
+    for epoch in range(start_epoch, config.scheduler.epochs):
         scheduler.step()
 
         train(epoch, model, optimizer, criterion, train_loader, config, writer,
@@ -254,13 +233,13 @@ def main():
         angle_error = test(epoch, model, criterion, test_loader, config,
                            writer, logger)
 
-        state = OrderedDict([
-            ('args', vars(args)),
-            ('state_dict', model.state_dict()),
-            ('optimizer', optimizer.state_dict()),
-            ('epoch', epoch),
-            ('angle_error', angle_error),
-        ])
+        state = {
+            'config': config,
+            'state_dict': model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'epoch': epoch,
+            'angle_error': angle_error,
+        }
         model_path = outdir / 'model_state.pth'
         torch.save(state, model_path)
 
