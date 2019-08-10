@@ -3,21 +3,23 @@ from mpiigaze.config.config_node import ConfigNode
 config = ConfigNode()
 
 config.dataset = ConfigNode()
-config.dataset.dataset_dir = ''
+config.dataset.dataset_dir = 'dataset/preprocessed'
 
 config.model = ConfigNode()
-config.model.name = 'resnet_preact'
+config.model.name = 'lenet'
 
 config.train = ConfigNode()
 config.train.checkpoint = ''
 config.train.resume = False
 config.train.device = 'cuda'
 config.train.batch_size = 64
+# optimizer (options: sgd, adam, amsgrad)
 config.train.optimizer = 'sgd'
 config.train.base_lr = 0.01
 config.train.momentum = 0.9
 config.train.nesterov = True
 config.train.weight_decay = 1e-4
+config.train.no_weight_decay_on_bn = False
 config.train.start_epoch = 0
 config.train.seed = 0
 config.train.val_first = True
@@ -41,28 +43,15 @@ config.optim = ConfigNode()
 # Adam
 config.optim.adam = ConfigNode()
 config.optim.adam.betas = (0.9, 0.999)
-# AdaBound
-config.optim.adabound = ConfigNode()
-config.optim.adabound.betas = (0.9, 0.999)
-config.optim.adabound.final_lr = 0.1
-config.optim.adabound.gamma = 1e-3
 
 # scheduler
 config.scheduler = ConfigNode()
 config.scheduler.epochs = 40
-# warm up (options: none, linear, exponential)
-config.scheduler.warmup = ConfigNode()
-config.scheduler.warmup.type = 'none'
-config.scheduler.warmup.epochs = 0
-config.scheduler.warmup.start_factor = 1e-3
-config.scheduler.warmup.exponent = 4
-# main scheduler (options: constant, linear, multistep, cosine, sgdr)
+# scheduler (options: multistep, cosine)
 config.scheduler.type = 'multistep'
 config.scheduler.milestones = [20, 30]
 config.scheduler.lr_decay = 0.1
 config.scheduler.lr_min_factor = 0.001
-config.scheduler.T0 = 10
-config.scheduler.T_mul = 1.
 
 # train data loader
 config.train.dataloader = ConfigNode()

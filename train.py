@@ -12,6 +12,8 @@ from mpiigaze.checkpoint import CheckPointer
 from mpiigaze.dataloader import create_dataloader
 from mpiigaze.logger import create_logger
 from mpiigaze.models import create_model
+from mpiigaze.optim import create_optimizer
+from mpiigaze.scheduler import create_scheduler
 from mpiigaze.utils import (set_seeds, load_config, save_config,
                             compute_angle_error, AverageMeter)
 
@@ -163,18 +165,10 @@ def main():
     train_loader, val_loader = create_dataloader(config, is_train=True)
 
     model = create_model(config)
-
     criterion = nn.MSELoss(reduction='mean')
 
-    optimizer = torch.optim.SGD(model.parameters(),
-                                lr=config.train.base_lr,
-                                momentum=config.train.momentum,
-                                weight_decay=config.train.weight_decay,
-                                nesterov=config.train.nesterov)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(
-        optimizer,
-        milestones=config.scheduler.milestones,
-        gamma=config.scheduler.lr_decay)
+    optimizer = create_optimizer(config, model)
+    scheduler = create_scheduler(config, optimizer)
 
     checkpointer = CheckPointer(model,
                                 optimizer=optimizer,
