@@ -57,7 +57,7 @@ def main():
 
     test_loader = create_dataloader(config, is_train=False)
 
-    ckpt = torch.load(config.test.checkpoint)
+    ckpt = torch.load(config.test.checkpoint, map_location='cpu')
 
     device = torch.device(config.test.device)
     module = importlib.import_module(f'mpiigaze.models.{config.model.name}')

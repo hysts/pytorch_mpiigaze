@@ -9,10 +9,11 @@ import torch.nn as nn
 import torchvision.utils
 from tensorboardX import SummaryWriter
 
+from mpiigaze.checkpoint import CheckPointer
 from mpiigaze.dataloader import create_dataloader
+from mpiigaze.logger import create_logger
 from mpiigaze.utils import (set_seeds, load_config, save_config,
                             compute_angle_error, AverageMeter)
-from mpiigaze.logger import create_logger
 
 global_step = 0
 
@@ -178,6 +179,12 @@ def main():
         milestones=config.scheduler.milestones,
         gamma=config.scheduler.lr_decay)
 
+    checkpointer = CheckPointer(model,
+                                optimizer=optimizer,
+                                scheduler=scheduler,
+                                checkpoint_dir=outdir,
+                                logger=logger)
+
     if config.train.val_first:
         validate(0, model, criterion, val_loader, config, writer, logger)
 
@@ -188,19 +195,12 @@ def main():
         scheduler.step()
 
         if epoch % config.train.val_period == 0:
-            angle_error = validate(epoch, model, criterion, val_loader, config,
-                                   writer, logger)
+            validate(epoch, model, criterion, val_loader, config, writer,
+                     logger)
 
         if epoch % config.train.checkpoint_period == 0:
-            state = {
-                'config': config,
-                'model': model.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'epoch': epoch,
-                'angle_error': angle_error,
-            }
-            model_path = outdir / f'checkpoint_{epoch:04}.pth'
-            torch.save(state, model_path)
+            ckpt_config = {'epoch': epoch, 'config': config}
+            checkpointer.save(f'model_{epoch:05d}', **ckpt_config)
 
     if writer is not None:
         writer.close()
