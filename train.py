@@ -61,7 +61,7 @@ def train(epoch, model, optimizer, scheduler, criterion, train_loader, config,
         if config.train.use_tensorboard:
             writer.add_scalar('Train/RunningLoss', loss_meter.val, global_step)
 
-        if step % 100 == 0:
+        if step % config.train.log_period == 0:
             logger.info(f'Epoch {epoch} Step {step}/{len(train_loader)} '
                         f'lr {scheduler.get_lr()[0]:.6f} '
                         f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f}) '
@@ -178,26 +178,29 @@ def main():
         milestones=config.scheduler.milestones,
         gamma=config.scheduler.lr_decay)
 
-    # run validation before start training
-    validate(0, model, criterion, val_loader, config, writer, logger)
+    if config.train.val_first:
+        validate(0, model, criterion, val_loader, config, writer, logger)
 
     for epoch in range(start_epoch, config.scheduler.epochs):
         epoch += 1
         train(epoch, model, optimizer, scheduler, criterion, train_loader,
               config, writer, logger)
-        angle_error = validate(epoch, model, criterion, val_loader, config,
-                               writer, logger)
         scheduler.step()
 
-        state = {
-            'config': config,
-            'model': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'epoch': epoch,
-            'angle_error': angle_error,
-        }
-        model_path = outdir / 'checkpoint.pth'
-        torch.save(state, model_path)
+        if epoch % config.train.val_period == 0:
+            angle_error = validate(epoch, model, criterion, val_loader, config,
+                                   writer, logger)
+
+        if epoch % config.train.checkpoint_period == 0:
+            state = {
+                'config': config,
+                'model': model.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'epoch': epoch,
+                'angle_error': angle_error,
+            }
+            model_path = outdir / f'checkpoint_{epoch:04}.pth'
+            torch.save(state, model_path)
 
 
 if __name__ == '__main__':
