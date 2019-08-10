@@ -20,10 +20,11 @@ config.train.nesterov = True
 config.train.weight_decay = 1e-4
 config.train.start_epoch = 0
 config.train.seed = 0
-config.train.test_first = True
-config.train.test_period = 1
+config.train.val_first = True
+config.train.val_period = 1
 
 config.train.test_id = 0
+config.train.val_ratio = 0.1
 
 config.train.outdir = 'results'
 config.train.log_period = 100
@@ -32,7 +33,7 @@ config.train.checkpoint_period = 10
 config.train.use_tensorboard = True
 config.tensorboard = ConfigNode()
 config.tensorboard.train_images = False
-config.tensorboard.test_images = False
+config.tensorboard.val_images = False
 config.tensorboard.model_params = False
 
 # optimizer

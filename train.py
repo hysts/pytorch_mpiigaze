@@ -12,7 +12,7 @@ import torchvision.utils
 from tensorboardX import SummaryWriter
 
 from mpiigaze.config import get_default_config
-from mpiigaze.dataloader import get_loader
+from mpiigaze.dataloader import create_dataloader
 from mpiigaze.utils import set_seeds, AverageMeter
 from mpiigaze.logger import create_logger
 
@@ -64,8 +64,8 @@ def compute_angle_error(preds, labels):
     return torch.acos(angles) * 180 / np.pi
 
 
-def train(epoch, model, optimizer, criterion, train_loader, config, writer,
-          logger):
+def train(epoch, model, optimizer, scheduler, criterion, train_loader, config,
+          writer, logger):
     global global_step
 
     logger.info(f'Train {epoch}')
@@ -80,7 +80,8 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer,
     for step, (images, poses, gazes) in enumerate(train_loader):
         global_step += 1
 
-        if config.train.use_tensorboard and config.tensorboard.train_images and step == 0:
+        if (config.train.use_tensorboard and config.tensorboard.train_images
+                and step == 0):
             image = torchvision.utils.make_grid(images,
                                                 normalize=True,
                                                 scale_each=True)
@@ -109,8 +110,9 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer,
 
         if step % 100 == 0:
             logger.info(f'Epoch {epoch} Step {step}/{len(train_loader)} '
-                        f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f}) '
-                        f'AngleError {angle_error_meter.val:.2f} '
+                        f'lr {scheduler.get_lr()[0]:.6f} '
+                        f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f}) '
+                        f'angle error {angle_error_meter.val:.2f} '
                         f'({angle_error_meter.avg:.2f})')
 
     elapsed = time.time() - start
@@ -118,12 +120,13 @@ def train(epoch, model, optimizer, criterion, train_loader, config, writer,
 
     if config.train.use_tensorboard:
         writer.add_scalar('Train/Loss', loss_meter.avg, epoch)
+        writer.add_scalar('Train/lr', scheduler.get_lr()[0], epoch)
         writer.add_scalar('Train/AngleError', angle_error_meter.avg, epoch)
         writer.add_scalar('Train/Time', elapsed, epoch)
 
 
-def test(epoch, model, criterion, test_loader, config, writer, logger):
-    logger.info(f'Test {epoch}')
+def validate(epoch, model, criterion, val_loader, config, writer, logger):
+    logger.info(f'Val {epoch}')
 
     model.eval()
 
@@ -134,12 +137,13 @@ def test(epoch, model, criterion, test_loader, config, writer, logger):
     start = time.time()
 
     with torch.no_grad():
-        for step, (images, poses, gazes) in enumerate(test_loader):
-            if config.train.use_tensorboard and config.tensorboard.test_images and epoch == 0 and step == 0:
+        for step, (images, poses, gazes) in enumerate(val_loader):
+            if (config.train.use_tensorboard and config.tensorboard.val_images
+                    and epoch == 0 and step == 0):
                 image = torchvision.utils.make_grid(images,
                                                     normalize=True,
                                                     scale_each=True)
-                writer.add_image('Test/Image', image, epoch)
+                writer.add_image('Val/Image', image, epoch)
 
             images = images.to(device)
             poses = poses.to(device)
@@ -162,9 +166,9 @@ def test(epoch, model, criterion, test_loader, config, writer, logger):
 
     if config.train.use_tensorboard:
         if epoch > 0:
-            writer.add_scalar('Test/Loss', loss_meter.avg, epoch)
-            writer.add_scalar('Test/AngleError', angle_error_meter.avg, epoch)
-        writer.add_scalar('Test/Time', elapsed, epoch)
+            writer.add_scalar('Val/Loss', loss_meter.avg, epoch)
+            writer.add_scalar('Val/AngleError', angle_error_meter.avg, epoch)
+        writer.add_scalar('Val/Time', elapsed, epoch)
 
     if config.tensorboard.model_params:
         for name, param in model.named_parameters():
@@ -202,22 +206,15 @@ def main():
     else:
         writer = None
 
-    # data loaders
-    dataset_dir = pathlib.Path(config.dataset.dataset_dir)
-    train_loader, test_loader = get_loader(dataset_dir, config.train.test_id,
-                                           config.train.batch_size,
-                                           config.train.dataloader.num_workers,
-                                           True)
+    train_loader, val_loader = create_dataloader(config, is_train=True)
 
     device = torch.device(config.train.device)
-    # model
     module = importlib.import_module(f'mpiigaze.models.{config.model.name}')
     model = module.Model()
     model.to(device)
 
     criterion = nn.MSELoss(reduction='mean')
 
-    # optimizer
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=config.train.base_lr,
                                 momentum=config.train.momentum,
@@ -228,16 +225,16 @@ def main():
         milestones=config.scheduler.milestones,
         gamma=config.scheduler.lr_decay)
 
-    # run test before start training
-    test(0, model, criterion, test_loader, config, writer, logger)
+    # run validation before start training
+    validate(0, model, criterion, val_loader, config, writer, logger)
 
     for epoch in range(start_epoch, config.scheduler.epochs):
+        epoch += 1
+        train(epoch, model, optimizer, scheduler, criterion, train_loader,
+              config, writer, logger)
+        angle_error = validate(epoch, model, criterion, val_loader, config,
+                               writer, logger)
         scheduler.step()
-
-        train(epoch, model, optimizer, criterion, train_loader, config, writer,
-              logger)
-        angle_error = test(epoch, model, criterion, test_loader, config,
-                           writer, logger)
 
         state = {
             'config': config,
