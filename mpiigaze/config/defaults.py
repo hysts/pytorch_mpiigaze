@@ -70,6 +70,21 @@ config.test.dataloader = ConfigNode()
 config.test.dataloader.num_workers = 2
 config.test.dataloader.pin_memory = False
 
+# Face detector
+config.face_detector = ConfigNode()
+config.face_detector.mode = 'dlib'
+config.face_detector.dlib = ConfigNode()
+config.face_detector.dlib.model = '.dlib/shape_predictor_68_face_landmarks.dat'
+
+# demo
+config.demo = ConfigNode()
+config.demo.camera_params = ''
+config.demo.normalized_camera_params = 'calib/normalized_camera_params_eye.yaml'
+config.demo.checkpoint = ''
+config.demo.device = 'cuda'
+config.demo.normalized_camera_distance = 0.6
+config.demo.gaze_visualization_length = 0.05
+
 # cuDNN
 config.cudnn = ConfigNode()
 config.cudnn.benchmark = True

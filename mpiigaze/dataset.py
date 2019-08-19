@@ -7,20 +7,19 @@ class MPIIGazeOneSubjectDataset(torch.utils.data.Dataset):
     def __init__(self, subject_id, dataset_dir):
         path = dataset_dir / f'{subject_id}.npz'
         with np.load(path) as fin:
-            self.images = fin['image']
-            self.poses = fin['pose']
-            self.gazes = fin['gaze']
-        self.length = len(self.images)
+            images = fin['image'].astype(np.float32) / 255
+            poses = fin['pose']
+            gazes = fin['gaze']
 
-        self.images = torch.unsqueeze(torch.from_numpy(self.images), 1)
-        self.poses = torch.from_numpy(self.poses)
-        self.gazes = torch.from_numpy(self.gazes)
+        self.images = torch.unsqueeze(torch.from_numpy(images), dim=1)
+        self.poses = torch.from_numpy(poses)
+        self.gazes = torch.from_numpy(gazes)
 
     def __getitem__(self, index):
         return self.images[index], self.poses[index], self.gazes[index]
 
     def __len__(self):
-        return self.length
+        return len(self.images)
 
     def __repr__(self):
         return self.__class__.__name__

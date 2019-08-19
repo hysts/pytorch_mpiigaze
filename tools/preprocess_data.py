@@ -6,21 +6,22 @@ import numpy as np
 import pandas as pd
 import scipy.io
 import cv2
+import tqdm
 
 
 def convert_pose(vect):
     M, _ = cv2.Rodrigues(np.array(vect).astype(np.float32))
     vec = M[:, 2]
-    yaw = np.arctan2(vec[0], vec[2])
     pitch = np.arcsin(vec[1])
-    return np.array([yaw, pitch])
+    yaw = np.arctan2(vec[0], vec[2])
+    return np.array([pitch, yaw])
 
 
 def convert_gaze(vect):
     x, y, z = vect
-    yaw = np.arctan2(-x, -z)
     pitch = np.arcsin(-y)
-    return np.array([yaw, pitch])
+    yaw = np.arctan2(-x, -z)
+    return np.array([pitch, yaw])
 
 
 def get_eval_info(subject_id, evaldir):
@@ -80,13 +81,13 @@ def get_subject_data(subject_id, datadir, evaldir):
             gaze = convert_gaze(left_gazes[day][index])
         else:
             image = right_images[day][index][:, ::-1]
-            pose = convert_pose(right_poses[day][index]) * np.array([-1, 1])
-            gaze = convert_gaze(right_gazes[day][index]) * np.array([-1, 1])
+            pose = convert_pose(right_poses[day][index]) * np.array([1, -1])
+            gaze = convert_gaze(right_gazes[day][index]) * np.array([1, -1])
         images.append(image)
         poses.append(pose)
         gazes.append(gaze)
 
-    images = np.array(images).astype(np.float32) / 255
+    images = np.array(images).astype(np.uint8)
     poses = np.array(poses).astype(np.float32)
     gazes = np.array(gazes).astype(np.float32)
 
@@ -104,7 +105,7 @@ def main():
 
     dataset_dir = pathlib.Path(args.dataset)
 
-    for subject_id in range(15):
+    for subject_id in tqdm.tqdm(range(15)):
         subject_id = f'p{subject_id:02}'
         datadir = dataset_dir / 'Data' / 'Normalized'
         evaldir = dataset_dir / 'Evaluation Subset' / 'sample list for eye image'
