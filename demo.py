@@ -19,6 +19,8 @@ from mpiigaze.utils import load_config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+QUIT_KEYS = {27, ord('q')}
+
 
 def main():
     config = load_config()
@@ -30,7 +32,6 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, gaze_estimator.camera.width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, gaze_estimator.camera.height)
 
-    QUIT_KEYS = {27, ord('q')}
     show_bbox = True
     show_head_pose = True
     show_landmarks = True
