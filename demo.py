@@ -34,6 +34,7 @@ def main():
     show_bbox = True
     show_head_pose = True
     show_landmarks = True
+    show_normalized_image = False
     show_template_model = False
     while True:
         key = cv2.waitKey(1) & 0xff
@@ -45,6 +46,8 @@ def main():
             show_landmarks = not show_landmarks
         elif key == ord('h'):
             show_head_pose = not show_head_pose
+        elif key == ord('n'):
+            show_normalized_image = not show_normalized_image
         elif key == ord('t'):
             show_template_model = not show_template_model
 
@@ -81,6 +84,11 @@ def main():
                 visualizer.draw_3d_points(face.model3d,
                                           color=(255, 0, 525),
                                           size=1)
+            if show_normalized_image:
+                reye = face.reye.normalized_image
+                leye = face.leye.normalized_image
+                normalized = np.hstack([reye, leye])
+                cv2.imshow('normalized', normalized[:, ::-1])
 
             # Draw the gaze vectors
             length = config.demo.gaze_visualization_length
