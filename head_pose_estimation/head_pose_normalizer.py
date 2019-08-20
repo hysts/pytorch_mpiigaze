@@ -13,7 +13,7 @@ class HeadPoseNormalizer:
     def __init__(self,
                  camera: Camera,
                  normalized_camera: Camera,
-                 normalized_distance: float = 0.6):
+                 normalized_distance: float):
         self.camera = camera
         self.normalized_camera = normalized_camera
         self.normalized_distance = normalized_distance
