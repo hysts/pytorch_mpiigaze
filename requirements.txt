@@ -1,7 +1,10 @@
 numpy
 scipy
-torch
+opencv-python
 dlib
+torch
+torchvision
+tensorboardX
 pyyaml
 tqdm
 yacs
