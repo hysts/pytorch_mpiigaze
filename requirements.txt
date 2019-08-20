@@ -1,0 +1,7 @@
+numpy
+scipy
+torch
+dlib
+pyyaml
+tqdm
+yacs
