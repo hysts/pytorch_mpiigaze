@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from common import Camera, Face, MODEL3D
+from head_pose_estimation.common import Camera, Face, MODEL3D
 
 AXIS_COLORS = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
 

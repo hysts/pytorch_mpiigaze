@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from common import Camera, FaceParts
+from head_pose_estimation.common import Camera, FaceParts
 
 
 def _normalize_vector(vector: np.ndarray) -> np.ndarray:

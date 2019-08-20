@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from common import Camera, Face
+from head_pose_estimation.common import Camera, Face
 
 
 @dataclasses.dataclass(frozen=True)

@@ -12,7 +12,7 @@ import logging
 import cv2
 import numpy as np
 
-from common import Visualizer
+from head_pose_estimation.common import Visualizer
 from mpiigaze.gaze_estimator import GazeEstimator
 from mpiigaze.utils import load_config
 

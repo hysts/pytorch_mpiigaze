@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import yacs.config
 
-from common import Camera, Face, MODEL3D
+from head_pose_estimation.common import Camera, Face, MODEL3D
 from head_pose_estimation import HeadPoseNormalizer, LandmarkEstimator
 from mpiigaze.models import create_model
 

@@ -4,7 +4,7 @@ import dlib
 import numpy as np
 import yacs.config
 
-from common.face import Face
+from head_pose_estimation.common import Face
 
 
 class LandmarkEstimator:

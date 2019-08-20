@@ -2,7 +2,7 @@ from typing import Optional
 
 import numpy as np
 
-from common import Eye, FaceParts
+from head_pose_estimation.common import Eye, FaceParts
 
 
 class Face(FaceParts):
