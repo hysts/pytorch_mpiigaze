@@ -10,9 +10,7 @@ def _normalize_vector(vector: np.ndarray) -> np.ndarray:
 
 
 class HeadPoseNormalizer:
-    def __init__(self,
-                 camera: Camera,
-                 normalized_camera: Camera,
+    def __init__(self, camera: Camera, normalized_camera: Camera,
                  normalized_distance: float):
         self.camera = camera
         self.normalized_camera = normalized_camera
@@ -53,12 +51,12 @@ class HeadPoseNormalizer:
     @staticmethod
     def _compute_normalizing_rotation(center: np.ndarray,
                                       head_rot: Rotation) -> Rotation:
-        zaxis = _normalize_vector(center.ravel())
+        z_axis = _normalize_vector(center.ravel())
         head_rot = head_rot.as_matrix()
-        head_xaxis = head_rot[:, 0]
-        yaxis = _normalize_vector(np.cross(zaxis, head_xaxis))
-        xaxis = _normalize_vector(np.cross(yaxis, zaxis))
-        return Rotation.from_matrix(np.vstack([xaxis, yaxis, zaxis]))
+        head_x_axis = head_rot[:, 0]
+        y_axis = _normalize_vector(np.cross(z_axis, head_x_axis))
+        x_axis = _normalize_vector(np.cross(y_axis, z_axis))
+        return Rotation.from_matrix(np.vstack([x_axis, y_axis, z_axis]))
 
     def _get_scale_matrix(self, distance: float) -> np.ndarray:
         return np.array([

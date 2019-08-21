@@ -1,52 +1,60 @@
 #!/usr/bin/env python
 
+from typing import Tuple
+
 import argparse
 import pathlib
+
+import cv2
 import numpy as np
 import pandas as pd
 import scipy.io
-import cv2
 import tqdm
 
 
-def convert_pose(vect):
-    M, _ = cv2.Rodrigues(np.array(vect).astype(np.float32))
-    vec = M[:, 2]
+def convert_pose(vector: np.ndarray) -> np.ndarray:
+    rot = cv2.Rodrigues(np.array(vector).astype(np.float32))[0]
+    vec = rot[:, 2]
     pitch = np.arcsin(vec[1])
     yaw = np.arctan2(vec[0], vec[2])
     return np.array([pitch, yaw])
 
 
-def convert_gaze(vect):
-    x, y, z = vect
+def convert_gaze(vector: np.ndarray) -> np.ndarray:
+    x, y, z = vector
     pitch = np.arcsin(-y)
     yaw = np.arctan2(-x, -z)
     return np.array([pitch, yaw])
 
 
-def get_eval_info(subject_id, evaldir):
-    path = evaldir / f'{subject_id}.txt'
-    df = pd.read_csv(path, delimiter=' ', header=None, names=['path', 'side'])
+def get_eval_info(person_id: str, eval_dir: pathlib.Path) -> pd.DataFrame:
+    eval_path = eval_dir / f'{person_id}.txt'
+    df = pd.read_csv(eval_path,
+                     delimiter=' ',
+                     header=None,
+                     names=['path', 'side'])
     df['day'] = df.path.apply(lambda path: path.split('/')[0])
     df['filename'] = df.path.apply(lambda path: path.split('/')[1])
     df = df.drop(['path'], axis=1)
     return df
 
 
-def get_subject_data(subject_id, datadir, evaldir):
-    left_images = {}
-    left_poses = {}
-    left_gazes = {}
-    right_images = {}
-    right_poses = {}
-    right_gazes = {}
-    filenames = {}
-    dirpath = datadir / subject_id
+def get_person_data(person_id: str, data_dir: pathlib.Path,
+                    eval_dir: pathlib.Path
+                    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    left_images = dict()
+    left_poses = dict()
+    left_gazes = dict()
+    right_images = dict()
+    right_poses = dict()
+    right_gazes = dict()
+    filenames = dict()
+    dirpath = data_dir / person_id
     for path in sorted(dirpath.glob('*')):
-        matdata = scipy.io.loadmat(path.as_posix(),
-                                   struct_as_record=False,
-                                   squeeze_me=True)
-        data = matdata['data']
+        mat_data = scipy.io.loadmat(path.as_posix(),
+                                    struct_as_record=False,
+                                    squeeze_me=True)
+        data = mat_data['data']
 
         day = path.stem
         left_images[day] = data.left.image
@@ -57,7 +65,7 @@ def get_subject_data(subject_id, datadir, evaldir):
         right_poses[day] = data.right.pose
         right_gazes[day] = data.right.gaze
 
-        filenames[day] = matdata['filenames']
+        filenames[day] = mat_data['filenames']
 
         if not isinstance(filenames[day], np.ndarray):
             left_images[day] = np.array([left_images[day]])
@@ -71,7 +79,7 @@ def get_subject_data(subject_id, datadir, evaldir):
     images = []
     poses = []
     gazes = []
-    df = get_eval_info(subject_id, evaldir)
+    df = get_eval_info(person_id, eval_dir)
     for _, row in df.iterrows():
         day = row.day
         index = np.where(filenames[day] == row.filename)[0][0]
@@ -97,22 +105,22 @@ def get_subject_data(subject_id, datadir, evaldir):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, required=True)
-    parser.add_argument('--outdir', type=str, required=True)
+    parser.add_argument('--output-dir', '-o', type=str, required=True)
     args = parser.parse_args()
 
-    outdir = pathlib.Path(args.outdir)
-    outdir.mkdir(exist_ok=True, parents=True)
+    output_dir = pathlib.Path(args.output_dir)
+    output_dir.mkdir(exist_ok=True, parents=True)
 
     dataset_dir = pathlib.Path(args.dataset)
 
-    for subject_id in tqdm.tqdm(range(15)):
-        subject_id = f'p{subject_id:02}'
-        datadir = dataset_dir / 'Data' / 'Normalized'
-        evaldir = dataset_dir / 'Evaluation Subset' / 'sample list for eye image'
-        images, poses, gazes = get_subject_data(subject_id, datadir, evaldir)
+    for person_id in tqdm.tqdm(range(15)):
+        person_id = f'p{person_id:02}'
+        data_dir = dataset_dir / 'Data' / 'Normalized'
+        eval_dir = dataset_dir / 'Evaluation Subset' / 'sample list for eye image'
+        images, poses, gazes = get_person_data(person_id, data_dir, eval_dir)
 
-        outpath = outdir / subject_id
-        np.savez(outpath, image=images, pose=poses, gaze=gazes)
+        output_path = output_dir / person_id
+        np.savez(output_path, image=images, pose=poses, gaze=gazes)
 
 
 if __name__ == '__main__':

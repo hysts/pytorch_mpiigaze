@@ -95,10 +95,10 @@ class CheckPointer:
         if self.scheduler is not None:
             checkpoint['scheduler'] = self.scheduler.state_dict()
 
-        outpath = self.checkpoint_dir / f'{name}.pth'
-        self.logger.info(f'Saving checkpoint to {outpath.as_posix()}')
-        torch.save(checkpoint, outpath)
-        self.tag_last_checkpoint(outpath)
+        output_path = self.checkpoint_dir / f'{name}.pth'
+        self.logger.info(f'Saving checkpoint to {output_path.as_posix()}')
+        torch.save(checkpoint, output_path)
+        self.tag_last_checkpoint(output_path)
 
     def load(self, path=None):
         if path is None and self.has_checkpoint():

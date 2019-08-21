@@ -1,11 +1,15 @@
+from typing import Tuple
+
 import pathlib
+
 import numpy as np
 import torch
+import yacs.config
 
 
-class MPIIGazeOneSubjectDataset(torch.utils.data.Dataset):
-    def __init__(self, subject_id, dataset_dir):
-        path = dataset_dir / f'{subject_id}.npz'
+class MPIIGazeOnePersonDataset(torch.utils.data.Dataset):
+    def __init__(self, person_id_str: str, dataset_dir: pathlib.Path):
+        path = dataset_dir / f'{person_id_str}.npz'
         with np.load(path) as fin:
             images = fin['image'].astype(np.float32) / 255
             poses = fin['pose']
@@ -15,28 +19,30 @@ class MPIIGazeOneSubjectDataset(torch.utils.data.Dataset):
         self.poses = torch.from_numpy(poses)
         self.gazes = torch.from_numpy(gazes)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int
+                    ) -> Tuple[torch.tensor, torch.tensor, torch.tensor]:
         return self.images[index], self.poses[index], self.gazes[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.images)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__class__.__name__
 
 
-def create_dataset(config, is_train=True):
+def create_dataset(config: yacs.config.CfgNode,
+                   is_train: bool = True) -> torch.utils.data.Dataset:
     dataset_dir = pathlib.Path(config.dataset.dataset_dir)
 
     assert dataset_dir.exists()
     assert config.train.test_id in range(15)
-    subject_ids = [f'p{index:02}' for index in range(15)]
-    test_subject_id = subject_ids[config.train.test_id]
+    person_ids = [f'p{index:02}' for index in range(15)]
+    test_person_id = person_ids[config.train.test_id]
 
     if is_train:
         train_dataset = torch.utils.data.ConcatDataset([
-            MPIIGazeOneSubjectDataset(subject_id, dataset_dir)
-            for subject_id in subject_ids if subject_id != test_subject_id
+            MPIIGazeOnePersonDataset(person_id, dataset_dir)
+            for person_id in person_ids if person_id != test_person_id
         ])
         assert len(train_dataset) == 42000
 
@@ -47,6 +53,6 @@ def create_dataset(config, is_train=True):
         lengths = [train_num, val_num]
         return torch.utils.data.dataset.random_split(train_dataset, lengths)
     else:
-        test_dataset = MPIIGazeOneSubjectDataset(test_subject_id, dataset_dir)
+        test_dataset = MPIIGazeOnePersonDataset(test_person_id, dataset_dir)
         assert len(test_dataset) == 3000
         return test_dataset

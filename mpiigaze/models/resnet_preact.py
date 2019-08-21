@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def initialize_weights(module):
+def initialize_weights(module: torch.nn.Module) -> None:
     if isinstance(module, nn.Conv2d):
         nn.init.kaiming_normal_(module.weight, mode='fan_out')
     elif isinstance(module, nn.BatchNorm2d):
@@ -14,7 +14,7 @@ def initialize_weights(module):
 
 
 class BasicBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride):
+    def __init__(self, in_channels: int, out_channels: int, stride: int):
         super().__init__()
 
         self.bn1 = nn.BatchNorm2d(in_channels)
@@ -43,7 +43,7 @@ class BasicBlock(nn.Module):
                           padding=0,
                           bias=False))
 
-    def forward(self, x):
+    def forward(self, x: torch.tensor) -> torch.tensor:
         x = F.relu(self.bn1(x), inplace=True)
         y = self.conv1(x)
         y = F.relu(self.bn2(y), inplace=True)
@@ -98,7 +98,9 @@ class Model(nn.Module):
 
         self.apply(initialize_weights)
 
-    def _make_stage(self, in_channels, out_channels, n_blocks, block, stride):
+    @staticmethod
+    def _make_stage(in_channels: int, out_channels: int, n_blocks: int,
+                    block: torch.nn.Module, stride: int) -> torch.nn.Module:
         stage = nn.Sequential()
         for index in range(n_blocks):
             block_name = f'block{index + 1}'
@@ -111,7 +113,7 @@ class Model(nn.Module):
                                  block(out_channels, out_channels, stride=1))
         return stage
 
-    def _forward_conv(self, x):
+    def _forward_conv(self, x: torch.tensor) -> torch.tensor:
         x = self.conv(x)
         x = self.stage1(x)
         x = self.stage2(x)
@@ -120,7 +122,7 @@ class Model(nn.Module):
         x = F.adaptive_avg_pool2d(x, output_size=1)
         return x
 
-    def forward(self, x, y):
+    def forward(self, x: torch.tensor, y: torch.tensor) -> torch.tensor:
         x = self._forward_conv(x)
         x = x.view(x.size(0), -1)
         x = torch.cat([x, y], dim=1)

@@ -1,7 +1,11 @@
+from typing import Any, Dict, List
+
 import torch
+import yacs.config
 
 
-def get_param_list(config, model):
+def get_param_list(config: yacs.config.CfgNode,
+                   model: torch.nn.Module) -> List[Dict[str, Any]]:
     if config.train.no_weight_decay_on_bn:
         param_list = []
         for name, params in model.named_parameters():
@@ -23,7 +27,8 @@ def get_param_list(config, model):
     return param_list
 
 
-def create_optimizer(config, model):
+def create_optimizer(config: yacs.config.CfgNode,
+                     model: torch.nn.Module) -> Any:
     params = get_param_list(config, model)
 
     if config.train.optimizer == 'sgd':

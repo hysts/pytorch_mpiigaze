@@ -1,9 +1,15 @@
+from typing import Tuple, Union
+
 import torch
+import yacs.config
 
 from mpiigaze.dataset import create_dataset
 
 
-def create_dataloader(config, is_train):
+def create_dataloader(
+        config: yacs.config.CfgNode, is_train: bool
+) -> Union[Tuple[torch.utils.data.DataLoader, torch.utils.data.
+                 DataLoader], torch.utils.data.DataLoader]:
     if is_train:
         train_dataset, val_dataset = create_dataset(config, is_train)
         train_loader = torch.utils.data.DataLoader(

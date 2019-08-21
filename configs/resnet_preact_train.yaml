@@ -14,7 +14,7 @@ train:
   seed: 0
   test_id: 0
   val_ratio: 0.1
-  outdir: experiments/resnet_preact/exp00
+  output_dir: experiments/resnet_preact/exp00
   log_period: 100
   checkpoint_period: 10
   use_tensorboard: True
@@ -31,14 +31,6 @@ scheduler:
   milestones: [30, 35]
   lr_decay: 0.1
   lr_min_factor: 0.001
-test:
-  checkpoint: ''
-  outdir: ''
-  device: cuda
-  batch_size: 256
-  dataloader:
-    num_workers: 1
-    pin_memory: False
 cudnn:
   benchmark: True
   deterministic: False

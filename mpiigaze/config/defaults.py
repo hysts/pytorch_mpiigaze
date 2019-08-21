@@ -25,7 +25,7 @@ config.train.val_period = 1
 config.train.test_id = 0
 config.train.val_ratio = 0.1
 
-config.train.outdir = 'results'
+config.train.output_dir = 'experiments/exp00'
 config.train.log_period = 100
 config.train.checkpoint_period = 10
 
@@ -62,7 +62,7 @@ config.train.val_dataloader.pin_memory = False
 # test config
 config.test = ConfigNode()
 config.test.checkpoint = ''
-config.test.outdir = ''
+config.test.output_dir = ''
 config.test.device = 'cuda'
 config.test.batch_size = 256
 # test data loader

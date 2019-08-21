@@ -61,9 +61,6 @@ def train(epoch, model, optimizer, scheduler, criterion, train_loader, config,
         loss_meter.update(loss.item(), num)
         angle_error_meter.update(angle_error.item(), num)
 
-        if config.train.use_tensorboard:
-            writer.add_scalar('Train/RunningLoss', loss_meter.val, global_step)
-
         if step % config.train.log_period == 0:
             logger.info(f'Epoch {epoch} Step {step}/{len(train_loader)} '
                         f'lr {scheduler.get_lr()[0]:.6f} '
@@ -136,19 +133,23 @@ def validate(epoch, model, criterion, val_loader, config, writer, logger):
 def main():
     config = load_config()
 
+    set_seeds(config.train.seed)
+
     torch.backends.cudnn.benchmark = config.cudnn.benchmark
     torch.backends.cudnn.deterministic = config.cudnn.deterministic
 
-    set_seeds(config.train.seed)
-
-    outdir = pathlib.Path(config.train.outdir)
-    if outdir.exists():
+    output_root_dir = pathlib.Path(config.train.output_dir)
+    output_dir = output_root_dir / f'{config.train.test_id:02}'
+    if output_dir.exists():
         raise RuntimeError(
-            f'Output directory `{outdir.as_posix()}` already exists')
-    outdir.mkdir(exist_ok=True, parents=True)
-    save_config(config, outdir)
+            f'Output directory `{output_dir.as_posix()}` already exists.')
+    output_dir.mkdir(exist_ok=True, parents=True)
 
-    logger = create_logger(name=__name__, outdir=outdir, filename='log.txt')
+    save_config(config, output_dir)
+
+    logger = create_logger(name=__name__,
+                           output_dir=output_dir,
+                           filename='log.txt')
     logger.info(config)
 
     train_loader, val_loader = create_dataloader(config, is_train=True)
@@ -161,12 +162,12 @@ def main():
     checkpointer = CheckPointer(model,
                                 optimizer=optimizer,
                                 scheduler=scheduler,
-                                checkpoint_dir=outdir,
+                                checkpoint_dir=output_dir,
                                 logger=logger)
 
-    # tensorboard
+    # TensorBoard
     if config.train.use_tensorboard:
-        writer = SummaryWriter(outdir.as_posix())
+        writer = SummaryWriter(output_dir.as_posix())
     else:
         writer = None
 
@@ -183,9 +184,10 @@ def main():
             validate(epoch, model, criterion, val_loader, config, writer,
                      logger)
 
-        if epoch % config.train.checkpoint_period == 0:
+        if (epoch % config.train.checkpoint_period == 0
+                or epoch == config.scheduler.epochs):
             ckpt_config = {'epoch': epoch, 'config': config}
-            checkpointer.save(f'model_{epoch:05d}', **ckpt_config)
+            checkpointer.save(f'checkpoint_{epoch:04d}', **ckpt_config)
 
     if writer is not None:
         writer.close()

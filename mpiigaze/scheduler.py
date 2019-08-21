@@ -1,7 +1,10 @@
+from typing import Any
+
 import torch
+import yacs.config
 
 
-def create_scheduler(config, optimizer):
+def create_scheduler(config: yacs.config.CfgNode, optimizer: Any) -> Any:
     if config.scheduler.type == 'multistep':
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
             optimizer,
