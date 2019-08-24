@@ -48,7 +48,7 @@ def convert_to_unit_vector(
 ) -> Tuple[torch.tensor, torch.tensor, torch.tensor]:
     x = -torch.cos(angles[:, 0]) * torch.sin(angles[:, 1])
     y = -torch.sin(angles[:, 0])
-    z = -torch.cos(angles[:, 1]) * torch.cos(angles[:, 1])
+    z = -torch.cos(angles[:, 0]) * torch.cos(angles[:, 1])
     norm = torch.sqrt(x**2 + y**2 + z**2)
     x /= norm
     y /= norm
