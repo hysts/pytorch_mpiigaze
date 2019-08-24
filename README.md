@@ -1,56 +1,92 @@
-# PyTorch implementation of MPIIGaze
+# A PyTorch implementation of MPIIGaze
 
 ## Requirements
 
-* Python 3.6.3
-* PyTorch
-* torchvision
-* [tensorboard-pytorch]( https://github.com/lanpa/tensorboard-pytorch ) (optional)
-* OpenCV
+* Python >= 3.7
+
+```bash
+pip install -r requirements.txt
+```
 
 
 ## Download the dataset and preprocess it
 
+```bash
+bash scripts/download_mpiigaze_dataset.sh
+python tools/preprocess_data.py --dataset datasets/MPIIGaze -o datasets/preprocessed
 ```
-$ wget http://datasets.d2.mpi-inf.mpg.de/MPIIGaze/MPIIGaze.tar.gz
-$ tar xzvf MPIIGaze.tar.gz
-
-$ python preprocess_data.py --dataset MPIIGaze --outdir data
-```
-
 
 
 ## Usage
 
+This repository uses [YACS](https://github.com/rbgirshick/yacs) for
+configuration management.
+Default parameters are specified in
+[`mpiigaze/config/defaults.py`](mpiigaze/config/defaults.py) (which is not
+supposed to be modified directly).
+You can overwrite those default parameters using a YAML file like
+[`configs/lenet_train.yaml`](configs/lenet_train.yaml).
+
+
+### Training and Evaluation
+
+By running the following code, you can train a model using all the
+data except the person with ID 0, and run test on that person.
+
+```bash
+python train.py --config configs/lenet_train.yaml
+python evaluate.py --config configs/lenet_eval.yaml
 ```
-$ python -u main.py --arch lenet --dataset data --test_id 0 --outdir results/00
-```
+
+Using [`scripts/run_all_lenet.sh`](scripts/run_all_lenet.sh) and
+[`scripts/run_all_resnet_preact.sh`](scripts/run_all_resnet_preact.sh),
+you can run all training and evaluation for LeNet and ResNet-8 with
+default parameters.
 
 
 ## Results
 
 | Model           | Mean Test Angle Error [degree] | Training Time |
 |:----------------|:------------------------------:|--------------:|
-| LeNet           |              6.43              |      3m40s    |
-| ResNet-preact-8 |              5.78              |      7m27s    |
+| LeNet           |              6.43              |  3.5 s/epoch  |
+| ResNet-preact-8 |              5.78              |   7 s/epoch   |
 
-```
-$ python -u main.py --arch lenet --dataset data --test_id 0 --outdir results/lenet/00 --batch_size 32 --base_lr 0.01 --momentum 0.9 --nesterov True --weight_decay 1e-4 --epochs 40 --milestones '[30, 35]' --lr_decay 0.1
-```
+The training time is the value when using GTX 1080Ti.
 
 ![](figures/lenet.png)
-
-```
-$ python -u main.py --arch resnet_preact --dataset data --test_id 0 --outdir results/resnet_preact/00 --batch_size 32 --base_lr 0.1 --momentum 0.9 --nesterov True --weight_decay 1e-4 --epochs 40 --milestones '[30, 35]' --lr_decay 0.1
-```
 
 ![](figures/resnet_preact_8.png)
 
 
+### Demo
+
+This demo program runs gaze estimation on the video from a webcam.
+
+1. Download the dlib pretrained model for landmark detection.
+
+    ```bash
+    bash scripts/download_dlib_model.sh
+    ```
+
+2. Calibrate the camera.
+
+    Save the calibration result in the same format as the sample
+    file [`data/calib/sample_params.yaml`](data/calib/sample_params.yaml).
+
+4. Run demo.
+
+    Specify the model path and the path of the camera calibration results
+    in the configuration file as in [`configs/demo.yaml`](configs/demo.yaml).
+
+    ```bash
+    python demo.py --config configs/demo.yaml
+    ```
+
+
 ## References
 
-* Xucong Zhang and Yusuke Sugano and Mario Fritz and Bulling, Andreas, "Appearance-based Gaze Estimation in the Wild," Proc. of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2015 [arXiv:1504.02863]( https://arxiv.org/abs/1504.02863 ), [Project Page]( https://www.mpi-inf.mpg.de/departments/computer-vision-and-multimodal-computing/research/gaze-based-human-computer-interaction/appearance-based-gaze-estimation-in-the-wild/ )
-* Xucong Zhang and Yusuke Sugano and Mario Fritz and Bulling, Andreas, "MPIIGaze: Real-World Dataset and Deep Appearance-Based Gaze Estimation," [arXiv:1711.09017]( https://arxiv.org/abs/1711.09017 )
+* Zhang, Xucong, Yusuke Sugano, Mario Fritz, and Andreas Bulling. "Appearance-based Gaze Estimation in the Wild." Proc. of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2015. [arXiv:1504.02863](https://arxiv.org/abs/1504.02863), [Project Page](https://www.mpi-inf.mpg.de/departments/computer-vision-and-multimodal-computing/research/gaze-based-human-computer-interaction/appearance-based-gaze-estimation-in-the-wild/)
+* Zhang, Xucong, Yusuke Sugano, Mario Fritz, and Andreas Bulling. "MPIIGaze: Real-World Dataset and Deep Appearance-Based Gaze Estimation." IEEE transactions on pattern analysis and machine intelligence 41 (2017). [arXiv:1711.09017](https://arxiv.org/abs/1711.09017)
 
 
 

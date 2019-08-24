@@ -1,0 +1,11 @@
+numpy
+scipy
+pandas
+opencv-python
+dlib
+torch
+torchvision
+tensorboardX
+pyyaml
+tqdm
+yacs
