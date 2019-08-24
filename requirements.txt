@@ -1,5 +1,6 @@
 numpy
 scipy
+pandas
 opencv-python
 dlib
 torch

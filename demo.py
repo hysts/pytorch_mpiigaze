@@ -1,11 +1,4 @@
 #!/usr/bin/env python
-"""
-Download pretrained model
-```
-wget http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
-bunzip2 shape_predictor_68_face_landmarks.dat.bz2
-```
-"""
 
 import logging
 
@@ -28,7 +21,12 @@ def main():
     gaze_estimator = GazeEstimator(config)
     visualizer = Visualizer(gaze_estimator.camera)
 
-    cap = cv2.VideoCapture(0)
+    if config.demo.use_camera:
+        cap = cv2.VideoCapture(0)
+    elif config.demo.video_path:
+        cap = cv2.VideoCapture(config.demo.video_path)
+    else:
+        raise ValueError
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, gaze_estimator.camera.width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, gaze_estimator.camera.height)
 
@@ -98,7 +96,9 @@ def main():
                 visualizer.draw_3d_line(eye.center,
                                         eye.center + length * eye.gaze_vector)
 
-        cv2.imshow('frame', visualizer.image[:, ::-1])
+        if config.demo.use_camera:
+            visualizer.image = visualizer.image[:, ::-1]
+        cv2.imshow('frame', visualizer.image)
 
     cap.release()
 

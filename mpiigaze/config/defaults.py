@@ -61,6 +61,7 @@ config.train.val_dataloader.pin_memory = False
 
 # test config
 config.test = ConfigNode()
+config.test.test_id = 0
 config.test.checkpoint = ''
 config.test.output_dir = ''
 config.test.device = 'cuda'
@@ -78,6 +79,8 @@ config.face_detector.dlib.model = 'data/dlib/shape_predictor_68_face_landmarks.d
 
 # demo
 config.demo = ConfigNode()
+config.demo.use_camera = True
+config.demo.video_path = ''
 config.demo.camera_params = ''
 config.demo.normalized_camera_params = 'data/calib/normalized_camera_params_eye.yaml'
 config.demo.checkpoint = ''

@@ -35,16 +35,24 @@ def create_dataset(config: yacs.config.CfgNode,
     dataset_dir = pathlib.Path(config.dataset.dataset_dir)
 
     assert dataset_dir.exists()
-    assert config.train.test_id in range(15)
+    assert config.train.test_id in range(-1, 15)
+    assert config.test.test_id in range(15)
     person_ids = [f'p{index:02}' for index in range(15)]
-    test_person_id = person_ids[config.train.test_id]
 
     if is_train:
-        train_dataset = torch.utils.data.ConcatDataset([
-            MPIIGazeOnePersonDataset(person_id, dataset_dir)
-            for person_id in person_ids if person_id != test_person_id
-        ])
-        assert len(train_dataset) == 42000
+        if config.train.test_id == -1:
+            train_dataset = torch.utils.data.ConcatDataset([
+                MPIIGazeOnePersonDataset(person_id, dataset_dir)
+                for person_id in person_ids
+            ])
+            assert len(train_dataset) == 45000
+        else:
+            test_person_id = person_ids[config.train.test_id]
+            train_dataset = torch.utils.data.ConcatDataset([
+                MPIIGazeOnePersonDataset(person_id, dataset_dir)
+                for person_id in person_ids if person_id != test_person_id
+            ])
+            assert len(train_dataset) == 42000
 
         val_ratio = config.train.val_ratio
         assert val_ratio < 1
@@ -53,6 +61,7 @@ def create_dataset(config: yacs.config.CfgNode,
         lengths = [train_num, val_num]
         return torch.utils.data.dataset.random_split(train_dataset, lengths)
     else:
+        test_person_id = person_ids[config.test.test_id]
         test_dataset = MPIIGazeOnePersonDataset(test_person_id, dataset_dir)
         assert len(test_dataset) == 3000
         return test_dataset

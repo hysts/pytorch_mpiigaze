@@ -47,6 +47,8 @@ def main():
 
     predictions, gts, angle_error = test(model, test_loader, config)
 
+    print(f'The mean angle error (deg): {angle_error:.2f}')
+
     output_path = output_dir / 'predictions.npy'
     np.save(output_path, predictions.numpy())
     output_path = output_dir / 'gts.npy'
