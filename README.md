@@ -48,8 +48,8 @@ default parameters.
 
 | Model           | Mean Test Angle Error [degree] | Training Time |
 |:----------------|:------------------------------:|--------------:|
-| LeNet           |              6.43              |  3.5 s/epoch  |
-| ResNet-preact-8 |              5.78              |   7 s/epoch   |
+| LeNet           |              6.52              |  3.5 s/epoch  |
+| ResNet-preact-8 |              5.73              |   7 s/epoch   |
 
 The training time is the value when using GTX 1080Ti.
 
