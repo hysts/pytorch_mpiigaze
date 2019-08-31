@@ -1,0 +1,38 @@
+mode: MPIIGaze
+device: cuda
+dataset:
+  dataset_dir: datasets/MPIIGaze.h5
+model:
+  name: resnet_preact
+train:
+  batch_size: 32
+  optimizer: sgd
+  base_lr: 0.1
+  momentum: 0.9
+  nesterov: True
+  weight_decay: 0.0001
+  no_weight_decay_on_bn: False
+  loss: L2
+  seed: 0
+  test_id: 0
+  val_ratio: 0.1
+  output_dir: experiments/mpiigaze/resnet_preact/exp00
+  log_period: 100
+  checkpoint_period: 10
+  use_tensorboard: True
+  train_dataloader:
+    num_workers: 4
+    drop_last: True
+    pin_memory: False
+  val_dataloader:
+    num_workers: 4
+    pin_memory: False
+scheduler:
+  epochs: 40
+  type: multistep
+  milestones: [30, 35]
+  lr_decay: 0.1
+  lr_min_factor: 0.001
+cudnn:
+  benchmark: True
+  deterministic: False

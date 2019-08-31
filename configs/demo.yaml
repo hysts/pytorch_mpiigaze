@@ -1,6 +1,0 @@
-model:
-  name: resnet_preact
-demo:
-  camera_params: data/calib/sample_params.yaml
-  checkpoint: data/models/resnet_preact/model.pth
-  device: cpu
