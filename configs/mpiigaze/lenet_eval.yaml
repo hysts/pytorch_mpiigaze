@@ -1,0 +1,17 @@
+mode: MPIIGaze
+device: cuda
+dataset:
+  dataset_dir: datasets/MPIIGaze.h5
+model:
+  name: lenet
+test:
+  test_id: 0
+  checkpoint: experiments/mpiigaze/lenet/exp00/00/checkpoint_0010.pth
+  output_dir: experiments/mpiigaze/lenet/exp00/00/eval
+  batch_size: 256
+  dataloader:
+    num_workers: 4
+    pin_memory: False
+cudnn:
+  benchmark: True
+  deterministic: False

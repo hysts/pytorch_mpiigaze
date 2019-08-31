@@ -1,0 +1,28 @@
+mode: MPIIFaceGaze
+device: cpu
+model:
+  name: resnet_simple
+  backbone:
+    name: resnet_simple
+    pretrained: resnet18
+    resnet_block: basic
+    resnet_layers: [2, 2, 2]
+gaze_estimator:
+  checkpoint: data/models/mpiifacegaze/resnet_simple_14/model.pth
+  camera_params: data/calib/sample_params.yaml
+  normalized_camera_params: data/calib/normalized_camera_params_face.yaml
+  normalized_camera_distance: 1.0
+demo:
+  use_camera: True
+  display_on_screen: True
+  wait_time: 1
+  video_path: ''
+  output_dir: ''
+  output_file_extension: mp4
+  head_pose_axis_length: 0.05
+  gaze_visualization_length: 0.05
+  show_bbox: True
+  show_head_pose: False
+  show_landmarks: True
+  show_normalized_image: False
+  show_template_model: False

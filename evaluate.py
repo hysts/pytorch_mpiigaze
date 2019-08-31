@@ -6,14 +6,14 @@ import numpy as np
 import torch
 import tqdm
 
-from mpiigaze.dataloader import create_dataloader
-from mpiigaze.models import create_model
-from mpiigaze.utils import load_config, compute_angle_error
+from gaze_estimation import (GazeEstimationMethod, create_dataloader,
+                             create_model)
+from gaze_estimation.utils import load_config, compute_angle_error, save_config
 
 
 def test(model, test_loader, config):
     model.eval()
-    device = torch.device(config.test.device)
+    device = torch.device(config.device)
 
     predictions = []
     gts = []
@@ -23,7 +23,12 @@ def test(model, test_loader, config):
             poses = poses.to(device)
             gazes = gazes.to(device)
 
-            outputs = model(images, poses)
+            if config.mode == GazeEstimationMethod.MPIIGaze.name:
+                outputs = model(images, poses)
+            elif config.mode == GazeEstimationMethod.MPIIFaceGaze.name:
+                outputs = model(images)
+            else:
+                raise ValueError
             predictions.append(outputs.cpu())
             gts.append(gazes.cpu())
 
@@ -36,8 +41,11 @@ def test(model, test_loader, config):
 def main():
     config = load_config()
 
-    output_dir = pathlib.Path(config.test.output_dir)
+    output_rootdir = pathlib.Path(config.test.output_dir)
+    checkpoint_name = pathlib.Path(config.test.checkpoint).stem
+    output_dir = output_rootdir / checkpoint_name
     output_dir.mkdir(exist_ok=True, parents=True)
+    save_config(config, output_dir)
 
     test_loader = create_dataloader(config, is_train=False)
 
