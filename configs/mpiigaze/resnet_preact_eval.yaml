@@ -1,0 +1,17 @@
+mode: MPIIGaze
+device: cuda
+dataset:
+  dataset_dir: datasets/MPIIGaze.h5
+model:
+  name: resnet_preact
+test:
+  test_id: 0
+  checkpoint: experiments/mpiigaze/resnet_preact/exp00/00/checkpoint_0040.pth
+  output_dir: experiments/mpiigaze/resnet_preact/exp00/00/eval
+  batch_size: 256
+  dataloader:
+    num_workers: 4
+    pin_memory: False
+cudnn:
+  benchmark: True
+  deterministic: False

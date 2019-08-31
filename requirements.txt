@@ -7,5 +7,6 @@ torch
 torchvision
 tensorboardX
 pyyaml
+h5py
 tqdm
 yacs

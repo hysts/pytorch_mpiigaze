@@ -1,0 +1,37 @@
+mode: MPIIGaze
+device: cuda
+dataset:
+  dataset_dir: datasets/MPIIGaze.h5
+model:
+  name: lenet
+train:
+  batch_size: 32
+  optimizer: sgd
+  base_lr: 0.01
+  momentum: 0.9
+  nesterov: True
+  weight_decay: 0.0001
+  loss: L2
+  seed: 0
+  test_id: -1
+  val_ratio: 0.0
+  output_dir: experiments/mpiigaze/lenet/exp00
+  log_period: 100
+  checkpoint_period: 10
+  use_tensorboard: True
+  train_dataloader:
+    num_workers: 4
+    drop_last: True
+    pin_memory: False
+  val_dataloader:
+    num_workers: 4
+    pin_memory: False
+scheduler:
+  epochs: 10
+  type: multistep
+  milestones: [8, 9]
+  lr_decay: 0.1
+  lr_min_factor: 0.001
+cudnn:
+  benchmark: True
+  deterministic: False
