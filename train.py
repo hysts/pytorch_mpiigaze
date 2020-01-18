@@ -70,7 +70,7 @@ def train(epoch, model, optimizer, scheduler, loss_function, train_loader,
         if step % config.train.log_period == 0:
             logger.info(f'Epoch {epoch} '
                         f'Step {step}/{len(train_loader)} '
-                        f'lr {scheduler.get_lr()[0]:.6f} '
+                        f'lr {scheduler.get_last_lr()[0]:.6f} '
                         f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f}) '
                         f'angle error {angle_error_meter.val:.2f} '
                         f'({angle_error_meter.avg:.2f})')
@@ -79,7 +79,8 @@ def train(epoch, model, optimizer, scheduler, loss_function, train_loader,
     logger.info(f'Elapsed {elapsed:.2f}')
 
     tensorboard_writer.add_scalar('Train/Loss', loss_meter.avg, epoch)
-    tensorboard_writer.add_scalar('Train/lr', scheduler.get_lr()[0], epoch)
+    tensorboard_writer.add_scalar('Train/lr',
+                                  scheduler.get_last_lr()[0], epoch)
     tensorboard_writer.add_scalar('Train/AngleError', angle_error_meter.avg,
                                   epoch)
     tensorboard_writer.add_scalar('Train/Time', elapsed, epoch)
