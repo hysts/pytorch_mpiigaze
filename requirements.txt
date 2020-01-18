@@ -10,3 +10,5 @@ pyyaml
 h5py
 tqdm
 yacs
+fvcore
+termcolor

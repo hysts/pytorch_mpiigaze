@@ -1,5 +1,4 @@
 from .config import get_default_config
-from .checkpoint import CheckPointer
 from .logger import create_logger
 from .types import GazeEstimationMethod, LossType
 from .transforms import create_transform

@@ -4,9 +4,9 @@ import time
 
 import torch
 import torchvision.utils
+from fvcore.common.checkpoint import Checkpointer
 
 from gaze_estimation import (
-    CheckPointer,
     create_dataloader,
     create_logger,
     create_loss,
@@ -70,7 +70,7 @@ def train(epoch, model, optimizer, scheduler, loss_function, train_loader,
         if step % config.train.log_period == 0:
             logger.info(f'Epoch {epoch} '
                         f'Step {step}/{len(train_loader)} '
-                        f'lr {scheduler.get_lr()[0]:.6f} '
+                        f'lr {scheduler.get_last_lr()[0]:.6f} '
                         f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f}) '
                         f'angle error {angle_error_meter.val:.2f} '
                         f'({angle_error_meter.avg:.2f})')
@@ -79,7 +79,8 @@ def train(epoch, model, optimizer, scheduler, loss_function, train_loader,
     logger.info(f'Elapsed {elapsed:.2f}')
 
     tensorboard_writer.add_scalar('Train/Loss', loss_meter.avg, epoch)
-    tensorboard_writer.add_scalar('Train/lr', scheduler.get_lr()[0], epoch)
+    tensorboard_writer.add_scalar('Train/lr',
+                                  scheduler.get_last_lr()[0], epoch)
     tensorboard_writer.add_scalar('Train/AngleError', angle_error_meter.avg,
                                   epoch)
     tensorboard_writer.add_scalar('Train/Time', elapsed, epoch)
@@ -159,11 +160,11 @@ def main():
     loss_function = create_loss(config)
     optimizer = create_optimizer(config, model)
     scheduler = create_scheduler(config, optimizer)
-    checkpointer = CheckPointer(model,
+    checkpointer = Checkpointer(model,
                                 optimizer=optimizer,
                                 scheduler=scheduler,
-                                checkpoint_dir=output_dir,
-                                logger=logger)
+                                save_dir=output_dir.as_posix(),
+                                save_to_disk=True)
     tensorboard_writer = create_tensorboard_writer(config, output_dir)
 
     if config.train.val_first:
@@ -181,7 +182,7 @@ def main():
 
         if (epoch % config.train.checkpoint_period == 0
                 or epoch == config.scheduler.epochs):
-            checkpoint_config = {'epoch': epoch, 'config': config}
+            checkpoint_config = {'epoch': epoch, 'config': config.as_dict()}
             checkpointer.save(f'checkpoint_{epoch:04d}', **checkpoint_config)
 
     tensorboard_writer.close()
