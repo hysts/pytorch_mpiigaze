@@ -4,9 +4,9 @@ import time
 
 import torch
 import torchvision.utils
+from fvcore.common.checkpoint import Checkpointer
 
 from gaze_estimation import (
-    CheckPointer,
     create_dataloader,
     create_logger,
     create_loss,
@@ -159,11 +159,11 @@ def main():
     loss_function = create_loss(config)
     optimizer = create_optimizer(config, model)
     scheduler = create_scheduler(config, optimizer)
-    checkpointer = CheckPointer(model,
+    checkpointer = Checkpointer(model,
                                 optimizer=optimizer,
                                 scheduler=scheduler,
-                                checkpoint_dir=output_dir,
-                                logger=logger)
+                                save_dir=output_dir.as_posix(),
+                                save_to_disk=True)
     tensorboard_writer = create_tensorboard_writer(config, output_dir)
 
     if config.train.val_first:
@@ -181,7 +181,7 @@ def main():
 
         if (epoch % config.train.checkpoint_period == 0
                 or epoch == config.scheduler.epochs):
-            checkpoint_config = {'epoch': epoch, 'config': config}
+            checkpoint_config = {'epoch': epoch, 'config': config.as_dict()}
             checkpointer.save(f'checkpoint_{epoch:04d}', **checkpoint_config)
 
     tensorboard_writer.close()
