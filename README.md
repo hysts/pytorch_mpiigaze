@@ -25,7 +25,7 @@ python tools/preprocess_mpiigaze.py --dataset datasets/MPIIGaze -o datasets/
 
 ```bash
 bash scripts/download_mpiifacegaze_dataset.sh
-python tools/preprocess_mpiifacegaze.py --dataset datasets/MPIIFaceGaze -o datasets/
+python tools/preprocess_mpiifacegaze.py --dataset datasets/MPIIFaceGaze_normalized -o datasets/
 ```
 
 
