@@ -39,6 +39,10 @@ class FaceParts:
 
     def denormalize_gaze_vector(self) -> None:
         normalizing_rot = self.normalizing_rot.as_matrix()
+        # Here gaze vector is a row vector, and rotation matrices are
+        # orthogonal, so multiplying the rotation matrix from the right is
+        # the same as multiplying the inverse of the rotation matrix to the
+        # column gaze vector from the left.
         self.gaze_vector = self.normalized_gaze_vector @ normalizing_rot
 
     @staticmethod
