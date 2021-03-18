@@ -5,6 +5,7 @@
 
 ## Requirements
 
+* Linux (Tested on Ubuntu only)
 * Python >= 3.7
 
 ```bash
