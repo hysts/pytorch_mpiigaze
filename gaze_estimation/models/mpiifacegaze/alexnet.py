@@ -48,10 +48,11 @@ class Model(nn.Module):
     def _register_hook(self) -> None:
         n_channels = self.conv1.in_channels
 
-        def hook(module: nn.Module,
-                 grad_in: Union[Tuple[torch.Tensor, ...], torch.Tensor],
-                 grad_out: Union[Tuple[torch.Tensor, ...], torch.Tensor]
-                 ) -> Optional[torch.Tensor]:
+        def hook(
+            module: nn.Module, grad_in: Union[Tuple[torch.Tensor, ...],
+                                              torch.Tensor],
+            grad_out: Union[Tuple[torch.Tensor, ...], torch.Tensor]
+        ) -> Optional[torch.Tensor]:
             return tuple(grad / n_channels for grad in grad_in)
 
         self.conv3.register_backward_hook(hook)

@@ -14,8 +14,9 @@ class OnePersonDataset(Dataset):
         self.dataset_path = dataset_path
         self.transform = transform
 
-    def __getitem__(self, index: int
-                    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def __getitem__(
+            self,
+            index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         with h5py.File(self.dataset_path, 'r') as f:
             image = f.get(f'{self.person_id_str}/image/{index:04}')[()]
             pose = f.get(f'{self.person_id_str}/pose/{index:04}')[()]

@@ -6,8 +6,9 @@ from torch.utils.data import DataLoader
 from gaze_estimation.datasets import create_dataset
 
 
-def create_dataloader(config: yacs.config.CfgNode, is_train: bool
-                      ) -> Union[Tuple[DataLoader, DataLoader], DataLoader]:
+def create_dataloader(
+        config: yacs.config.CfgNode,
+        is_train: bool) -> Union[Tuple[DataLoader, DataLoader], DataLoader]:
     if is_train:
         train_dataset, val_dataset = create_dataset(config, is_train)
         train_loader = DataLoader(

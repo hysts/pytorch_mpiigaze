@@ -34,10 +34,11 @@ class Model(nn.Module):
     def _register_hook(self):
         n_channels = self.feature_extractor.n_features
 
-        def hook(module: nn.Module,
-                 grad_in: Union[Tuple[torch.Tensor, ...], torch.Tensor],
-                 grad_out: Union[Tuple[torch.Tensor, ...], torch.Tensor]
-                 ) -> Optional[torch.Tensor]:
+        def hook(
+            module: nn.Module, grad_in: Union[Tuple[torch.Tensor, ...],
+                                              torch.Tensor],
+            grad_out: Union[Tuple[torch.Tensor, ...], torch.Tensor]
+        ) -> Optional[torch.Tensor]:
             return tuple(grad / n_channels for grad in grad_in)
 
         self.conv.register_backward_hook(hook)

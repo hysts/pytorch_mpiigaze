@@ -57,8 +57,8 @@ def _create_color_formatter() -> logging.Formatter:
         datefmt="%Y-%m-%d %H:%M:%S")
 
 
-def _create_stream_handler(formatter: logging.Formatter
-                           ) -> logging.StreamHandler:
+def _create_stream_handler(
+        formatter: logging.Formatter) -> logging.StreamHandler:
     stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setLevel(logging.DEBUG)
     stream_handler.setFormatter(formatter)
