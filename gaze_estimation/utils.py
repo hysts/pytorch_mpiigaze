@@ -61,8 +61,8 @@ def create_train_output_dir(config: yacs.config.CfgNode) -> pathlib.Path:
 
 
 def convert_to_unit_vector(
-        angles: torch.tensor
-) -> Tuple[torch.tensor, torch.tensor, torch.tensor]:
+        angles: torch.Tensor
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     pitches = angles[:, 0]
     yaws = angles[:, 1]
     x = -torch.cos(pitches) * torch.sin(yaws)
@@ -75,8 +75,8 @@ def convert_to_unit_vector(
     return x, y, z
 
 
-def compute_angle_error(predictions: torch.tensor,
-                        labels: torch.tensor) -> torch.tensor:
+def compute_angle_error(predictions: torch.Tensor,
+                        labels: torch.Tensor) -> torch.Tensor:
     pred_x, pred_y, pred_z = convert_to_unit_vector(predictions)
     label_x, label_y, label_z = convert_to_unit_vector(labels)
     angles = pred_x * label_x + pred_y * label_y + pred_z * label_z

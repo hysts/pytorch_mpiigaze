@@ -44,7 +44,7 @@ class BasicBlock(nn.Module):
                           padding=0,
                           bias=False))
 
-    def forward(self, x: torch.tensor) -> torch.tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = F.relu(self.bn1(x), inplace=True)
         y = self.conv1(x)
         y = F.relu(self.bn2(y), inplace=True)
@@ -114,7 +114,7 @@ class Model(nn.Module):
                                  block(out_channels, out_channels, stride=1))
         return stage
 
-    def _forward_conv(self, x: torch.tensor) -> torch.tensor:
+    def _forward_conv(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv(x)
         x = self.stage1(x)
         x = self.stage2(x)
@@ -123,7 +123,7 @@ class Model(nn.Module):
         x = F.adaptive_avg_pool2d(x, output_size=1)
         return x
 
-    def forward(self, x: torch.tensor, y: torch.tensor) -> torch.tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         x = self._forward_conv(x)
         x = x.view(x.size(0), -1)
         x = torch.cat([x, y], dim=1)

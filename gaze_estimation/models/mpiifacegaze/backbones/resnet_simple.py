@@ -36,7 +36,7 @@ class Model(torchvision.models.ResNet):
             features = self.forward(data)
             self.n_features = features.shape[1]
 
-    def forward(self, x: torch.tensor) -> torch.tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)

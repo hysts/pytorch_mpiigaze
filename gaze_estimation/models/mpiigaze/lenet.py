@@ -28,7 +28,7 @@ class Model(nn.Module):
         nn.init.normal_(self.conv2.weight, mean=0, std=0.01)
         self.apply(initialize_weights)
 
-    def forward(self, x: torch.tensor, y: torch.tensor) -> torch.tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         x = F.max_pool2d(self.conv1(x), kernel_size=2, stride=2)
         x = F.max_pool2d(self.conv2(x), kernel_size=2, stride=2)
         x = F.relu(self.fc1(x.view(x.size(0), -1)), inplace=True)

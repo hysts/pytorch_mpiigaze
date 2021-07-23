@@ -27,7 +27,7 @@ class OnePersonDataset(Dataset):
         self.gazes = gazes
 
     def __getitem__(self, index: int
-                    ) -> Tuple[torch.tensor, torch.tensor, torch.tensor]:
+                    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         image = self.transform(self.images[index])
         pose = torch.from_numpy(self.poses[index])
         gaze = torch.from_numpy(self.gazes[index])
