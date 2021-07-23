@@ -1,6 +1,5 @@
-from typing import Optional
-
 import enum
+from typing import Optional
 
 import numpy as np
 from scipy.spatial.transform import Rotation

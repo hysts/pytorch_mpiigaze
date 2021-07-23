@@ -1,8 +1,7 @@
-from typing import List, Optional
-
 import logging
 import pathlib
 import sys
+from typing import List, Optional
 
 import termcolor
 
@@ -47,14 +46,14 @@ def _create_handlers(output_dir: Optional[pathlib.Path] = None,
 def _create_plain_formatter() -> logging.Formatter:
     return logging.Formatter(
         '[%(asctime)s] %(name)s %(levelname)s: %(message)s',
-        datefmt="%Y-%m-%d %H:%M:%S")
+        datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def _create_color_formatter() -> logging.Formatter:
     return logging.Formatter(
         termcolor.colored('[%(asctime)s] %(name)s %(levelname)s: ', 'green') +
         '%(message)s',
-        datefmt="%Y-%m-%d %H:%M:%S")
+        datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def _create_stream_handler(

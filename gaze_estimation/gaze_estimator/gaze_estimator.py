@@ -1,15 +1,16 @@
-from typing import List
-
 import logging
+from typing import List
 
 import numpy as np
 import torch
 import yacs.config
 
-from gaze_estimation.gaze_estimator.common import Camera, Face, FacePartsName, MODEL3D
-from .head_pose_estimation import HeadPoseNormalizer, LandmarkEstimator
 from gaze_estimation import (GazeEstimationMethod, create_model,
                              create_transform)
+from gaze_estimation.gaze_estimator.common import (MODEL3D, Camera, Face,
+                                                   FacePartsName)
+
+from .head_pose_estimation import HeadPoseNormalizer, LandmarkEstimator
 
 logger = logging.getLogger(__name__)
 

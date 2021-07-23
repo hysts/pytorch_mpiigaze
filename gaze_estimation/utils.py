@@ -1,8 +1,7 @@
-from typing import Tuple
-
 import argparse
 import pathlib
 import random
+from typing import Tuple
 
 import numpy as np
 import torch

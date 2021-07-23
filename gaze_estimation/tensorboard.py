@@ -1,7 +1,7 @@
 import pathlib
 
-from tensorboardX import SummaryWriter
 import yacs.config
+from tensorboardX import SummaryWriter
 
 
 class DummyWriter(SummaryWriter):

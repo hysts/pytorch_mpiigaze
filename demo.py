@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 
-from typing import Optional
-
 import datetime
 import logging
 import pathlib
+from typing import Optional
 
 import cv2
 import numpy as np
 import yacs.config
 
+from gaze_estimation import GazeEstimationMethod, GazeEstimator
 from gaze_estimation.gaze_estimator.common import (Face, FacePartsName,
                                                    Visualizer)
 from gaze_estimation.utils import load_config
-from gaze_estimation import GazeEstimationMethod, GazeEstimator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ import tqdm
 
 from gaze_estimation import (GazeEstimationMethod, create_dataloader,
                              create_model)
-from gaze_estimation.utils import load_config, compute_angle_error, save_config
+from gaze_estimation.utils import compute_angle_error, load_config, save_config
 
 
 def test(model, test_loader, config):

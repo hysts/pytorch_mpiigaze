@@ -6,24 +6,13 @@ import torch
 import torchvision.utils
 from fvcore.common.checkpoint import Checkpointer
 
-from gaze_estimation import (
-    create_dataloader,
-    create_logger,
-    create_loss,
-    create_optimizer,
-    create_scheduler,
-    create_tensorboard_writer,
-)
-from gaze_estimation import GazeEstimationMethod, create_model
-from gaze_estimation.utils import (
-    AverageMeter,
-    compute_angle_error,
-    create_train_output_dir,
-    load_config,
-    save_config,
-    set_seeds,
-    setup_cudnn,
-)
+from gaze_estimation import (GazeEstimationMethod, create_dataloader,
+                             create_logger, create_loss, create_model,
+                             create_optimizer, create_scheduler,
+                             create_tensorboard_writer)
+from gaze_estimation.utils import (AverageMeter, compute_angle_error,
+                                   create_train_output_dir, load_config,
+                                   save_config, set_seeds, setup_cudnn)
 
 
 def train(epoch, model, optimizer, scheduler, loss_function, train_loader,

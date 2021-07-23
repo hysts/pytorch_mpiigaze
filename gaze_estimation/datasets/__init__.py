@@ -1,6 +1,5 @@
-from typing import List, Union
-
 import pathlib
+from typing import List, Union
 
 import torch
 import yacs.config

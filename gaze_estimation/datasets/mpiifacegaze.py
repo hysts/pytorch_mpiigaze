@@ -1,6 +1,5 @@
-from typing import Callable, Tuple
-
 import pathlib
+from typing import Callable, Tuple
 
 import h5py
 import torch
