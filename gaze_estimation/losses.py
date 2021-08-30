@@ -1,7 +1,7 @@
 import torch.nn as nn
 import yacs.config
 
-from . import LossType
+from .types import LossType
 
 
 def create_loss(config: yacs.config.CfgNode) -> nn.Module:

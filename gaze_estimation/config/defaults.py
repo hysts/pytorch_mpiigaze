@@ -1,4 +1,4 @@
-from gaze_estimation.config.config_node import ConfigNode
+from .config_node import ConfigNode
 
 config = ConfigNode()
 

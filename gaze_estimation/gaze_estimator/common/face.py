@@ -2,7 +2,8 @@ from typing import Optional
 
 import numpy as np
 
-from gaze_estimation.gaze_estimator.common import Eye, FaceParts, FacePartsName
+from .eye import Eye
+from .face_parts import FaceParts, FacePartsName
 
 
 class Face(FaceParts):

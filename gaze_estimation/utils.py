@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import yacs.config
 
-from gaze_estimation import get_default_config
+from .config import get_default_config
 
 
 def set_seeds(seed: int) -> None:

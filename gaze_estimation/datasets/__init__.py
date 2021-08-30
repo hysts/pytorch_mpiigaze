@@ -5,7 +5,8 @@ import torch
 import yacs.config
 from torch.utils.data import Dataset
 
-from gaze_estimation import GazeEstimationMethod, create_transform
+from ..transforms import create_transform
+from ..types import GazeEstimationMethod
 
 
 def create_dataset(config: yacs.config.CfgNode,

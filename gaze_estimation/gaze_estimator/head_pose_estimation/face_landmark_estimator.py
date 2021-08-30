@@ -4,7 +4,7 @@ import dlib
 import numpy as np
 import yacs.config
 
-from gaze_estimation.gaze_estimator.common import Face
+from ..common import Face
 
 
 class LandmarkEstimator:

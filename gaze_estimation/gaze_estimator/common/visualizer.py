@@ -4,7 +4,9 @@ import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from gaze_estimation.gaze_estimator.common import MODEL3D, Camera, Face
+from .camera import Camera
+from .face import Face
+from .face_model import MODEL3D
 
 AXIS_COLORS = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
 

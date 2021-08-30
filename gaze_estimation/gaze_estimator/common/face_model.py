@@ -4,7 +4,8 @@ import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from gaze_estimation.gaze_estimator.common import Camera, Face
+from .camera import Camera
+from .face import Face
 
 
 @dataclasses.dataclass(frozen=True)
@@ -137,10 +138,10 @@ class FaceModel:
     def compute_face_eye_centers(self, face: Face) -> None:
         """Compute the centers of the face and eyes.
 
-        The face center is defined as the average coordinates of the
-        six points at the corners of both eyes and the mouth.
-        The eye centers are defined as the average coordinates of the
-        corners of each eye.
+        The face center is defined as the average coordinates of the six
+        points at the corners of both eyes and the mouth. The eye
+        centers are defined as the average coordinates of the corners of
+        each eye.
         """
         face.center = face.model3d[np.concatenate(
             [self.REYE_INDICES, self.LEYE_INDICES,

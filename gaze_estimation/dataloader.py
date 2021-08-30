@@ -3,7 +3,7 @@ from typing import Tuple, Union
 import yacs.config
 from torch.utils.data import DataLoader
 
-from gaze_estimation.datasets import create_dataset
+from .datasets import create_dataset
 
 
 def create_dataloader(

@@ -2,8 +2,7 @@ import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from gaze_estimation.gaze_estimator.common import (Camera, FaceParts,
-                                                   FacePartsName)
+from ..common import Camera, FaceParts, FacePartsName
 
 
 def _normalize_vector(vector: np.ndarray) -> np.ndarray:
