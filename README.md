@@ -116,6 +116,10 @@ This demo program runs gaze estimation on the video from a webcam.
     python demo.py --config configs/demo_mpiigaze_resnet.yaml
     ```
 
+## Related repos
+
+- https://github.com/hysts/pl_gaze_estimation
+- https://github.com/hysts/pytorch_mpiigaze_demo
 
 ## References
 
