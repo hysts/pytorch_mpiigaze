@@ -51,6 +51,7 @@ class HeadPoseNormalizer:
     @staticmethod
     def _compute_normalizing_rotation(center: np.ndarray,
                                       head_rot: Rotation) -> Rotation:
+        # See section 4.2 and Figure 9 of https://arxiv.org/abs/1711.09017
         z_axis = _normalize_vector(center.ravel())
         head_rot = head_rot.as_matrix()
         head_x_axis = head_rot[:, 0]
