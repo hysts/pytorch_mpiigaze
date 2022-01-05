@@ -20,7 +20,7 @@ class Model(torchvision.models.ResNet):
 
         pretrained_name = config.model.backbone.pretrained
         if pretrained_name:
-            state_dict = torchvision.models.utils.load_state_dict_from_url(
+            state_dict = torch.hub.load_state_dict_from_url(
                 torchvision.models.resnet.model_urls[pretrained_name])
             self.load_state_dict(state_dict, strict=False)
             # While the pretrained models of torchvision are trained
