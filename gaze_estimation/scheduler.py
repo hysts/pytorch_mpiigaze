@@ -1,20 +1,18 @@
 from typing import Any
 
 import torch
-import yacs.config
+from omegaconf import DictConfig
 
 
-def create_scheduler(config: yacs.config.CfgNode, optimizer: Any) -> Any:
-    if config.scheduler.type == 'multistep':
+def create_scheduler(config: DictConfig, optimizer: Any) -> Any:
+    if config.scheduler.type == "multistep":
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer,
-            milestones=config.scheduler.milestones,
-            gamma=config.scheduler.lr_decay)
-    elif config.scheduler.type == 'cosine':
+            optimizer, milestones=config.scheduler.milestones, gamma=config.scheduler.lr_decay
+        )
+    elif config.scheduler.type == "cosine":
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer,
-            T_max=config.scheduler.epochs,
-            eta_min=config.scheduler.lr_min_factor)
+            optimizer, T_max=config.scheduler.epochs, eta_min=config.scheduler.lr_min_factor
+        )
     else:
-        raise ValueError()
+        raise ValueError
     return scheduler

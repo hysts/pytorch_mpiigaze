@@ -36,13 +36,15 @@ uv run python tools/preprocess_mpiifacegaze.py --dataset datasets/MPIIFaceGaze_n
 
 ## Usage
 
-This repository uses [YACS](https://github.com/rbgirshick/yacs) for
+This repository uses [OmegaConf](https://omegaconf.readthedocs.io/) for
 configuration management.
 Default parameters are specified in
-[`gaze_estimation/config/defaults.py`](gaze_estimation/config/defaults.py)
+[`gaze_estimation/config/config_schema.py`](gaze_estimation/config/config_schema.py)
 (which is not supposed to be modified directly).
 You can overwrite those default parameters using a YAML file like
-[`configs/mpiigaze/lenet_train.yaml`](configs/mpiigaze/lenet_train.yaml).
+[`configs/mpiigaze/lenet_train.yaml`](configs/mpiigaze/lenet_train.yaml),
+and further override single values from the command line in
+`key=value` form, e.g. `train.test_id=1`.
 
 
 ### Training and Evaluation

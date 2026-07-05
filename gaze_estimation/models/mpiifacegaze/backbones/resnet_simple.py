@@ -1,10 +1,10 @@
 import torch
 import torchvision
-import yacs.config
+from omegaconf import DictConfig
 
 
 class Model(torchvision.models.ResNet):
-    def __init__(self, config: yacs.config.CfgNode):
+    def __init__(self, config: DictConfig):
         block_name = config.model.backbone.resnet_block
         if block_name == "basic":
             block = torchvision.models.resnet.BasicBlock

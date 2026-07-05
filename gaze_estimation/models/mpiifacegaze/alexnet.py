@@ -3,12 +3,12 @@ from typing import Optional, Tuple, Union
 import torch
 import torch.nn.functional as F
 import torchvision
-import yacs.config
+from omegaconf import DictConfig
 from torch import nn
 
 
 class Model(nn.Module):
-    def __init__(self, config: yacs.config.CfgNode):
+    def __init__(self, config: DictConfig):
         super().__init__()
         # torchvision removed the `pretrained` argument in 0.15.
         self.feature_extractor = torchvision.models.alexnet(

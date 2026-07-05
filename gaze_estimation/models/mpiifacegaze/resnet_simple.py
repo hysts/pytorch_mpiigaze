@@ -1,24 +1,20 @@
 from typing import Optional, Tuple, Union
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import yacs.config
+from omegaconf import DictConfig
+from torch import nn
 
 from .backbones import create_backbone
 
 
 class Model(nn.Module):
-    def __init__(self, config: yacs.config.CfgNode):
+    def __init__(self, config: DictConfig):
         super().__init__()
         self.feature_extractor = create_backbone(config)
         n_channels = self.feature_extractor.n_features
 
-        self.conv = nn.Conv2d(n_channels,
-                              1,
-                              kernel_size=1,
-                              stride=1,
-                              padding=0)
+        self.conv = nn.Conv2d(n_channels, 1, kernel_size=1, stride=1, padding=0)
         # This model assumes the input image size is 224x224.
         self.fc = nn.Linear(n_channels * 14**2, 2)
 
@@ -35,10 +31,10 @@ class Model(nn.Module):
         n_channels = self.feature_extractor.n_features
 
         def hook(
-            module: nn.Module, grad_in: Union[Tuple[torch.Tensor, ...],
-                                              torch.Tensor],
-            grad_out: Union[Tuple[torch.Tensor, ...], torch.Tensor]
-        ) -> Optional[torch.Tensor]:
+            module: nn.Module,
+            grad_in: tuple[torch.Tensor, ...] | torch.Tensor,
+            grad_out: tuple[torch.Tensor, ...] | torch.Tensor,
+        ) -> torch.Tensor | None:
             return tuple(grad / n_channels for grad in grad_in)
 
         self.conv.register_backward_hook(hook)

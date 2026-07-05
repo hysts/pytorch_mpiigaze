@@ -1,7 +1,7 @@
 import pathlib
 from typing import Any
 
-import yacs.config
+from omegaconf import DictConfig
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -21,7 +21,7 @@ class DummyWriter:
         pass
 
 
-def create_tensorboard_writer(config: yacs.config.CfgNode, output_dir: pathlib.Path):
+def create_tensorboard_writer(config: DictConfig, output_dir: pathlib.Path):
     if config.train.use_tensorboard:
         return SummaryWriter(output_dir.as_posix())
     return DummyWriter()

@@ -1,7 +1,7 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import yacs.config
+from omegaconf import DictConfig
+from torch import nn
 
 
 def initialize_weights(module: torch.nn.Module) -> None:
@@ -13,7 +13,7 @@ def initialize_weights(module: torch.nn.Module) -> None:
 
 
 class Model(nn.Module):
-    def __init__(self, config: yacs.config.CfgNode):
+    def __init__(self, config: DictConfig):
         super().__init__()
 
         self.conv1 = nn.Conv2d(1, 20, kernel_size=5, stride=1, padding=0)
