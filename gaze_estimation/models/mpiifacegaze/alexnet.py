@@ -1,23 +1,25 @@
 from typing import Optional, Tuple, Union
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import yacs.config
+from torch import nn
 
 
 class Model(nn.Module):
     def __init__(self, config: yacs.config.CfgNode):
         super().__init__()
+        # torchvision removed the `pretrained` argument in 0.15.
         self.feature_extractor = torchvision.models.alexnet(
-            pretrained=True).features
+            weights=torchvision.models.AlexNet_Weights.IMAGENET1K_V1
+        ).features
         # While the pretrained models of torchvision are trained using
         # images with RGB channel order, in this repository images are
         # treated as BGR channel order.
         # Therefore, reverse the channel order of the first convolutional
         # layer.
-        module = getattr(self.feature_extractor, '0')
+        module = getattr(self.feature_extractor, "0")
         module.weight.data = module.weight.data[:, [2, 1, 0]]
 
         self.conv1 = nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0)
@@ -49,10 +51,10 @@ class Model(nn.Module):
         n_channels = self.conv1.in_channels
 
         def hook(
-            module: nn.Module, grad_in: Union[Tuple[torch.Tensor, ...],
-                                              torch.Tensor],
-            grad_out: Union[Tuple[torch.Tensor, ...], torch.Tensor]
-        ) -> Optional[torch.Tensor]:
+            module: nn.Module,
+            grad_in: tuple[torch.Tensor, ...] | torch.Tensor,
+            grad_out: tuple[torch.Tensor, ...] | torch.Tensor,
+        ) -> torch.Tensor | None:
             return tuple(grad / n_channels for grad in grad_in)
 
         self.conv3.register_backward_hook(hook)
