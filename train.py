@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
+import logging
 import time
 
 import torch
 import torchvision.utils
 from fvcore.common.checkpoint import Checkpointer
-from omegaconf import OmegaConf
+from omegaconf import DictConfig, OmegaConf
+from torch.utils.data import DataLoader
 
 from gaze_estimation import (
     GazeEstimationMethod,
@@ -17,6 +19,7 @@ from gaze_estimation import (
     create_scheduler,
     create_tensorboard_writer,
 )
+from gaze_estimation.tensorboard import TensorboardWriter
 from gaze_estimation.utils import (
     AverageMeter,
     compute_angle_error,
@@ -28,8 +31,18 @@ from gaze_estimation.utils import (
 )
 
 
-def train(epoch, model, optimizer, scheduler, loss_function, train_loader, config, tensorboard_writer, logger):
-    logger.info(f"Train {epoch}")
+def train(
+    epoch: int,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    scheduler: torch.optim.lr_scheduler.LRScheduler,
+    loss_function: torch.nn.Module,
+    train_loader: DataLoader,
+    config: DictConfig,
+    tensorboard_writer: TensorboardWriter,
+    logger: logging.Logger,
+) -> None:
+    logger.info("Train %d", epoch)
 
     model.train()
 
@@ -38,14 +51,12 @@ def train(epoch, model, optimizer, scheduler, loss_function, train_loader, confi
     loss_meter = AverageMeter()
     angle_error_meter = AverageMeter()
     start = time.time()
-    for step, (images, poses, gazes) in enumerate(train_loader):
+    for step, batch in enumerate(train_loader):
         if config.tensorboard.train_images and step == 0:
-            image = torchvision.utils.make_grid(images, normalize=True, scale_each=True)
+            image = torchvision.utils.make_grid(batch[0], normalize=True, scale_each=True)
             tensorboard_writer.add_image("Train/Image", image, epoch)
 
-        images = images.to(device)
-        poses = poses.to(device)
-        gazes = gazes.to(device)
+        images, poses, gazes = (tensor.to(device) for tensor in batch)
 
         optimizer.zero_grad()
 
@@ -68,16 +79,19 @@ def train(epoch, model, optimizer, scheduler, loss_function, train_loader, confi
 
         if step % config.train.log_period == 0:
             logger.info(
-                f"Epoch {epoch} "
-                f"Step {step}/{len(train_loader)} "
-                f"lr {scheduler.get_last_lr()[0]:.6f} "
-                f"loss {loss_meter.val:.4f} ({loss_meter.avg:.4f}) "
-                f"angle error {angle_error_meter.val:.2f} "
-                f"({angle_error_meter.avg:.2f})"
+                "Epoch %d Step %d/%d lr %.6f loss %.4f (%.4f) angle error %.2f (%.2f)",
+                epoch,
+                step,
+                len(train_loader),
+                scheduler.get_last_lr()[0],
+                loss_meter.val,
+                loss_meter.avg,
+                angle_error_meter.val,
+                angle_error_meter.avg,
             )
 
     elapsed = time.time() - start
-    logger.info(f"Elapsed {elapsed:.2f}")
+    logger.info("Elapsed %.2f", elapsed)
 
     tensorboard_writer.add_scalar("Train/Loss", loss_meter.avg, epoch)
     tensorboard_writer.add_scalar("Train/lr", scheduler.get_last_lr()[0], epoch)
@@ -85,8 +99,16 @@ def train(epoch, model, optimizer, scheduler, loss_function, train_loader, confi
     tensorboard_writer.add_scalar("Train/Time", elapsed, epoch)
 
 
-def validate(epoch, model, loss_function, val_loader, config, tensorboard_writer, logger):
-    logger.info(f"Val {epoch}")
+def validate(
+    epoch: int,
+    model: torch.nn.Module,
+    loss_function: torch.nn.Module,
+    val_loader: DataLoader,
+    config: DictConfig,
+    tensorboard_writer: TensorboardWriter,
+    logger: logging.Logger,
+) -> None:
+    logger.info("Val %d", epoch)
 
     model.eval()
 
@@ -97,14 +119,12 @@ def validate(epoch, model, loss_function, val_loader, config, tensorboard_writer
     start = time.time()
 
     with torch.no_grad():
-        for step, (images, poses, gazes) in enumerate(val_loader):
+        for step, batch in enumerate(val_loader):
             if config.tensorboard.val_images and epoch == 0 and step == 0:
-                image = torchvision.utils.make_grid(images, normalize=True, scale_each=True)
+                image = torchvision.utils.make_grid(batch[0], normalize=True, scale_each=True)
                 tensorboard_writer.add_image("Val/Image", image, epoch)
 
-            images = images.to(device)
-            poses = poses.to(device)
-            gazes = gazes.to(device)
+            images, poses, gazes = (tensor.to(device) for tensor in batch)
 
             if config.mode == GazeEstimationMethod.MPIIGaze.name:
                 outputs = model(images, poses)
@@ -120,10 +140,10 @@ def validate(epoch, model, loss_function, val_loader, config, tensorboard_writer
             loss_meter.update(loss.item(), num)
             angle_error_meter.update(angle_error.item(), num)
 
-    logger.info(f"Epoch {epoch} loss {loss_meter.avg:.4f} angle error {angle_error_meter.avg:.2f}")
+    logger.info("Epoch %d loss %.4f angle error %.2f", epoch, loss_meter.avg, angle_error_meter.avg)
 
     elapsed = time.time() - start
-    logger.info(f"Elapsed {elapsed:.2f}")
+    logger.info("Elapsed %.2f", elapsed)
 
     if epoch > 0:
         tensorboard_writer.add_scalar("Val/Loss", loss_meter.avg, epoch)
@@ -135,7 +155,7 @@ def validate(epoch, model, loss_function, val_loader, config, tensorboard_writer
             tensorboard_writer.add_histogram(name, param, epoch)
 
 
-def main():
+def main() -> None:
     config = load_config()
 
     set_seeds(config.train.seed)

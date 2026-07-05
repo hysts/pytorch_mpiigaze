@@ -1,19 +1,20 @@
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from omegaconf import DictConfig
 from torch import nn
 
 
 def initialize_weights(module: torch.nn.Module) -> None:
     if isinstance(module, nn.Conv2d):
-        nn.init.zeros_(module.bias)
+        if module.bias is not None:
+            nn.init.zeros_(module.bias)
     elif isinstance(module, nn.Linear):
         nn.init.xavier_uniform_(module.weight)
         nn.init.zeros_(module.bias)
 
 
 class Model(nn.Module):
-    def __init__(self, config: DictConfig):
+    def __init__(self, config: DictConfig) -> None:  # noqa: ARG002
         super().__init__()
 
         self.conv1 = nn.Conv2d(1, 20, kernel_size=5, stride=1, padding=0)
@@ -33,5 +34,4 @@ class Model(nn.Module):
         x = F.max_pool2d(self.conv2(x), kernel_size=2, stride=2)
         x = F.relu(self.fc1(x.view(x.size(0), -1)), inplace=True)
         x = torch.cat([x, y], dim=1)
-        x = self.fc2(x)
-        return x
+        return self.fc2(x)

@@ -4,7 +4,7 @@ from omegaconf import DictConfig
 
 
 class Model(torchvision.models.ResNet):
-    def __init__(self, config: DictConfig):
+    def __init__(self, config: DictConfig) -> None:
         block_name = config.model.backbone.resnet_block
         if block_name == "basic":
             block = torchvision.models.resnet.BasicBlock
@@ -12,7 +12,7 @@ class Model(torchvision.models.ResNet):
             block = torchvision.models.resnet.Bottleneck
         else:
             raise ValueError
-        layers = config.model.backbone.resnet_layers + [1]
+        layers = [*config.model.backbone.resnet_layers, 1]
         super().__init__(block, layers)
         del self.layer4
         del self.avgpool
@@ -45,5 +45,4 @@ class Model(torchvision.models.ResNet):
 
         x = self.layer1(x)
         x = self.layer2(x)
-        x = self.layer3(x)
-        return x
+        return self.layer3(x)

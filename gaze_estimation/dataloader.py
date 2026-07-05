@@ -1,14 +1,14 @@
-from typing import Tuple, Union
+from typing import cast
 
 from omegaconf import DictConfig
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from .datasets import create_dataset
 
 
 def create_dataloader(config: DictConfig, is_train: bool) -> tuple[DataLoader, DataLoader] | DataLoader:
     if is_train:
-        train_dataset, val_dataset = create_dataset(config, is_train)
+        train_dataset, val_dataset = cast("tuple[Dataset, Dataset]", create_dataset(config, is_train))
         train_loader = DataLoader(
             train_dataset,
             batch_size=config.train.batch_size,
@@ -26,8 +26,8 @@ def create_dataloader(config: DictConfig, is_train: bool) -> tuple[DataLoader, D
             drop_last=False,
         )
         return train_loader, val_loader
-    test_dataset = create_dataset(config, is_train)
-    test_loader = DataLoader(
+    test_dataset = cast("Dataset", create_dataset(config, is_train))
+    return DataLoader(
         test_dataset,
         batch_size=config.test.batch_size,
         num_workers=config.test.dataloader.num_workers,
@@ -35,4 +35,3 @@ def create_dataloader(config: DictConfig, is_train: bool) -> tuple[DataLoader, D
         pin_memory=config.test.dataloader.pin_memory,
         drop_last=False,
     )
-    return test_loader

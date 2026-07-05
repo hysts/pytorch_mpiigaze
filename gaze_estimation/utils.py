@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 import random
-from typing import Tuple
+from typing import cast
 
 import numpy as np
 import torch
@@ -12,12 +12,14 @@ from .config import get_default_config
 
 def set_seeds(seed: int) -> None:
     random.seed(seed)
-    np.random.seed(seed)
+    # The global numpy RNG is seeded on purpose so that any legacy
+    # np.random call in dependencies is reproducible as well.
+    np.random.seed(seed)  # noqa: NPY002
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
 
-def setup_cudnn(config) -> None:
+def setup_cudnn(config: DictConfig) -> None:
     torch.backends.cudnn.benchmark = config.cudnn.benchmark
     torch.backends.cudnn.deterministic = config.cudnn.deterministic
 
@@ -30,15 +32,15 @@ def load_config() -> DictConfig:
 
     config = get_default_config()
     if args.config is not None:
-        config = OmegaConf.merge(config, OmegaConf.load(args.config))
+        config = cast("DictConfig", OmegaConf.merge(config, OmegaConf.load(args.config)))
     if args.options:
-        config = OmegaConf.merge(config, OmegaConf.from_dotlist(args.options))
+        config = cast("DictConfig", OmegaConf.merge(config, OmegaConf.from_dotlist(args.options)))
     if not torch.cuda.is_available():
         config.device = "cpu"
         config.train.train_dataloader.pin_memory = False
         config.train.val_dataloader.pin_memory = False
         config.test.dataloader.pin_memory = False
-    OmegaConf.set_readonly(config, True)
+    OmegaConf.set_readonly(config, value=True)
     return config
 
 
@@ -53,7 +55,8 @@ def create_train_output_dir(config: DictConfig) -> pathlib.Path:
     else:
         output_dir = output_root_dir / "all"
     if output_dir.exists():
-        raise RuntimeError(f"Output directory `{output_dir.as_posix()}` already exists.")
+        error_msg = f"Output directory `{output_dir.as_posix()}` already exists."
+        raise RuntimeError(error_msg)
     output_dir.mkdir(exist_ok=True, parents=True)
     return output_dir
 
@@ -79,16 +82,16 @@ def compute_angle_error(predictions: torch.Tensor, labels: torch.Tensor) -> torc
 
 
 class AverageMeter:
-    def __init__(self):
+    def __init__(self) -> None:
         self.reset()
 
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
+    def reset(self) -> None:
+        self.val = 0.0
+        self.avg = 0.0
+        self.sum = 0.0
         self.count = 0
 
-    def update(self, val, num):
+    def update(self, val: float, num: int) -> None:
         self.val = val
         self.sum += val * num
         self.count += num

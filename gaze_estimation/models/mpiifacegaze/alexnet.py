@@ -1,14 +1,12 @@
-from typing import Optional, Tuple, Union
-
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 import torchvision
 from omegaconf import DictConfig
 from torch import nn
 
 
 class Model(nn.Module):
-    def __init__(self, config: DictConfig):
+    def __init__(self, config: DictConfig) -> None:  # noqa: ARG002
         super().__init__()
         # torchvision removed the `pretrained` argument in 0.15.
         self.feature_extractor = torchvision.models.alexnet(
@@ -37,9 +35,9 @@ class Model(nn.Module):
         nn.init.normal_(self.conv1.weight, mean=0, std=0.01)
         nn.init.normal_(self.conv2.weight, mean=0, std=0.01)
         nn.init.normal_(self.conv3.weight, mean=0, std=0.001)
-        nn.init.constant_(self.conv1.bias, val=0.1)
-        nn.init.constant_(self.conv2.bias, val=0.1)
-        nn.init.constant_(self.conv3.bias, val=1)
+        for conv, bias_value in ((self.conv1, 0.1), (self.conv2, 0.1), (self.conv3, 1.0)):
+            if conv.bias is not None:
+                nn.init.constant_(conv.bias, val=bias_value)
         nn.init.normal_(self.fc1.weight, mean=0, std=0.005)
         nn.init.normal_(self.fc2.weight, mean=0, std=0.0001)
         nn.init.normal_(self.fc3.weight, mean=0, std=0.0001)
@@ -51,10 +49,10 @@ class Model(nn.Module):
         n_channels = self.conv1.in_channels
 
         def hook(
-            module: nn.Module,
+            _module: nn.Module,
             grad_in: tuple[torch.Tensor, ...] | torch.Tensor,
-            grad_out: tuple[torch.Tensor, ...] | torch.Tensor,
-        ) -> torch.Tensor | None:
+            _grad_out: tuple[torch.Tensor, ...] | torch.Tensor,
+        ) -> tuple[torch.Tensor, ...]:
             return tuple(grad / n_channels for grad in grad_in)
 
         self.conv3.register_backward_hook(hook)
@@ -68,5 +66,4 @@ class Model(nn.Module):
         x = x.view(x.size(0), -1)
         x = F.dropout(F.relu(self.fc1(x)), p=0.5, training=self.training)
         x = F.dropout(F.relu(self.fc2(x)), p=0.5, training=self.training)
-        x = self.fc3(x)
-        return x
+        return self.fc3(x)

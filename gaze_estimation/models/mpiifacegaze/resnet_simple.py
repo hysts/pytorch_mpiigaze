@@ -1,7 +1,7 @@
-from typing import Optional, Tuple, Union
+from typing import cast
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from omegaconf import DictConfig
 from torch import nn
 
@@ -9,10 +9,10 @@ from .backbones import create_backbone
 
 
 class Model(nn.Module):
-    def __init__(self, config: DictConfig):
+    def __init__(self, config: DictConfig) -> None:
         super().__init__()
         self.feature_extractor = create_backbone(config)
-        n_channels = self.feature_extractor.n_features
+        n_channels = cast("int", self.feature_extractor.n_features)
 
         self.conv = nn.Conv2d(n_channels, 1, kernel_size=1, stride=1, padding=0)
         # This model assumes the input image size is 224x224.
@@ -23,18 +23,19 @@ class Model(nn.Module):
 
     def _initialize_weight(self) -> None:
         nn.init.kaiming_normal_(self.conv.weight)
-        nn.init.zeros_(self.conv.bias)
+        if self.conv.bias is not None:
+            nn.init.zeros_(self.conv.bias)
         nn.init.xavier_normal_(self.fc.weight)
         nn.init.zeros_(self.fc.bias)
 
-    def _register_hook(self):
-        n_channels = self.feature_extractor.n_features
+    def _register_hook(self) -> None:
+        n_channels = cast("int", self.feature_extractor.n_features)
 
         def hook(
-            module: nn.Module,
+            _module: nn.Module,
             grad_in: tuple[torch.Tensor, ...] | torch.Tensor,
-            grad_out: tuple[torch.Tensor, ...] | torch.Tensor,
-        ) -> torch.Tensor | None:
+            _grad_out: tuple[torch.Tensor, ...] | torch.Tensor,
+        ) -> tuple[torch.Tensor, ...]:
             return tuple(grad / n_channels for grad in grad_in)
 
         self.conv.register_backward_hook(hook)
@@ -44,5 +45,4 @@ class Model(nn.Module):
         y = F.relu(self.conv(x))
         x = x * y
         x = x.view(x.size(0), -1)
-        x = self.fc(x)
-        return x
+        return self.fc(x)

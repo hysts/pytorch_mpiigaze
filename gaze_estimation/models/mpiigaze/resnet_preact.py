@@ -1,5 +1,5 @@
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from omegaconf import DictConfig
 from torch import nn
 
@@ -15,7 +15,7 @@ def initialize_weights(module: torch.nn.Module) -> None:
 
 
 class BasicBlock(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, stride: int):
+    def __init__(self, in_channels: int, out_channels: int, stride: int) -> None:
         super().__init__()
 
         self.bn1 = nn.BatchNorm2d(in_channels)
@@ -39,7 +39,7 @@ class BasicBlock(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, config: DictConfig):
+    def __init__(self, config: DictConfig) -> None:  # noqa: ARG002
         super().__init__()
 
         depth = 8
@@ -47,7 +47,9 @@ class Model(nn.Module):
         input_shape = (1, 1, 36, 60)
 
         n_blocks_per_stage = (depth - 2) // 6
-        assert n_blocks_per_stage * 6 + 2 == depth
+        if n_blocks_per_stage * 6 + 2 != depth:
+            error_msg = f"depth must be 6n+2, but got {depth}."
+            raise ValueError(error_msg)
 
         n_channels = [base_channels, base_channels * 2, base_channels * 4]
 
@@ -68,7 +70,7 @@ class Model(nn.Module):
 
     @staticmethod
     def _make_stage(
-        in_channels: int, out_channels: int, n_blocks: int, block: torch.nn.Module, stride: int
+        in_channels: int, out_channels: int, n_blocks: int, block: type[BasicBlock], stride: int
     ) -> torch.nn.Module:
         stage = nn.Sequential()
         for index in range(n_blocks):
@@ -85,12 +87,10 @@ class Model(nn.Module):
         x = self.stage2(x)
         x = self.stage3(x)
         x = F.relu(self.bn(x), inplace=True)
-        x = F.adaptive_avg_pool2d(x, output_size=1)
-        return x
+        return F.adaptive_avg_pool2d(x, output_size=1)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         x = self._forward_conv(x)
         x = x.view(x.size(0), -1)
         x = torch.cat([x, y], dim=1)
-        x = self.fc(x)
-        return x
+        return self.fc(x)
