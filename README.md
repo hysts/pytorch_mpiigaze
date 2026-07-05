@@ -91,30 +91,22 @@ The training time is the value when using GTX 1080Ti.
 
 
 
-### Demo
+## Demo
 
-This demo program runs gaze estimation on the video from a webcam.
+This repository no longer ships its own demo program. Use [ptgaze](https://github.com/hysts/pytorch_mpiigaze_demo) instead, which runs gaze estimation on webcam video or video files:
 
-1. Download the dlib pretrained model for landmark detection.
+```bash
+pip install ptgaze
+ptgaze --mode mpiigaze
+```
 
-    ```bash
-    bash scripts/download_dlib_model.sh
-    ```
+To visualize a model trained with this repository, convert the checkpoint to safetensors with `ptgaze-convert` and point `gaze_estimator.checkpoint` in a ptgaze config file at the converted file:
 
-2. Calibrate the camera.
+```bash
+ptgaze-convert checkpoint_0040.pth model.safetensors --mode mpiigaze
+```
 
-    Save the calibration result in the same format as the sample
-    file [`data/calib/sample_params.yaml`](data/calib/sample_params.yaml).
-
-4. Run demo.
-
-    Specify the model path and the path of the camera calibration results
-    in the configuration file as in
-    [`configs/demo_mpiigaze_resnet.yaml`](configs/demo_mpiigaze_resnet.yaml).
-
-    ```bash
-    python demo.py --config configs/demo_mpiigaze_resnet.yaml
-    ```
+See the [ptgaze README](https://github.com/hysts/pytorch_mpiigaze_demo) for details.
 
 ## Related repos
 

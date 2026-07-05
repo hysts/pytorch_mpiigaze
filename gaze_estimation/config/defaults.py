@@ -86,35 +86,6 @@ config.test.dataloader = ConfigNode()
 config.test.dataloader.num_workers = 2
 config.test.dataloader.pin_memory = False
 
-# Face detector
-config.face_detector = ConfigNode()
-config.face_detector.mode = 'dlib'
-config.face_detector.dlib = ConfigNode()
-config.face_detector.dlib.model = 'data/dlib/shape_predictor_68_face_landmarks.dat'
-
-# Gaze estimator
-config.gaze_estimator = ConfigNode()
-config.gaze_estimator.checkpoint = ''
-config.gaze_estimator.camera_params = ''
-config.gaze_estimator.normalized_camera_params = 'data/calib/normalized_camera_params_eye.yaml'
-config.gaze_estimator.normalized_camera_distance = 0.6
-
-# demo
-config.demo = ConfigNode()
-config.demo.use_camera = True
-config.demo.display_on_screen = True
-config.demo.wait_time = 1
-config.demo.video_path = ''
-config.demo.output_dir = ''
-config.demo.output_file_extension = 'mp4'
-config.demo.head_pose_axis_length = 0.05
-config.demo.gaze_visualization_length = 0.05
-config.demo.show_bbox = True
-config.demo.show_head_pose = True
-config.demo.show_landmarks = True
-config.demo.show_normalized_image = False
-config.demo.show_template_model = False
-
 # cuDNN
 config.cudnn = ConfigNode()
 config.cudnn.benchmark = True

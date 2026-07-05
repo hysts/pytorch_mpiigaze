@@ -1,4 +1,3 @@
-dlib
 fvcore
 h5py
 numpy
