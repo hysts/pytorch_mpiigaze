@@ -9,10 +9,11 @@ See also [this repo](https://github.com/hysts/pl_gaze_estimation).
 ## Requirements
 
 * Linux (Tested on Ubuntu only)
-* Python >= 3.7
+* Python >= 3.10
+* [uv](https://docs.astral.sh/uv/)
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 
@@ -22,14 +23,14 @@ pip install -r requirements.txt
 
 ```bash
 bash scripts/download_mpiigaze_dataset.sh
-python tools/preprocess_mpiigaze.py --dataset datasets/MPIIGaze -o datasets/
+uv run python tools/preprocess_mpiigaze.py --dataset datasets/MPIIGaze -o datasets/
 ```
 
 ### MPIIFaceGaze
 
 ```bash
 bash scripts/download_mpiifacegaze_dataset.sh
-python tools/preprocess_mpiifacegaze.py --dataset datasets/MPIIFaceGaze_normalized -o datasets/
+uv run python tools/preprocess_mpiifacegaze.py --dataset datasets/MPIIFaceGaze_normalized -o datasets/
 ```
 
 
@@ -50,8 +51,8 @@ By running the following code, you can train a model using all the
 data except the person with ID 0, and run test on that person.
 
 ```bash
-python train.py --config configs/mpiigaze/lenet_train.yaml
-python evaluate.py --config configs/mpiigaze/lenet_eval.yaml
+uv run python train.py --config configs/mpiigaze/lenet_train.yaml
+uv run python evaluate.py --config configs/mpiigaze/lenet_eval.yaml
 ```
 
 Using [`scripts/run_all_mpiigaze_lenet.sh`](scripts/run_all_mpiigaze_lenet.sh) and
