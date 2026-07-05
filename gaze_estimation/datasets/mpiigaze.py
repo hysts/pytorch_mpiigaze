@@ -12,9 +12,9 @@ class OnePersonDataset(Dataset):
     def __init__(self, person_id_str: str, dataset_path: pathlib.Path, transform: Callable) -> None:
         self.transform = transform
 
-        # In case of the MPIIGaze dataset, each image is so small that
-        # reading image will become a bottleneck even with HDF5.
-        # So, first load them all into memory.
+        # The eye images in MPIIGaze are so small that per-sample reads
+        # would become the bottleneck even with HDF5, so load everything
+        # into memory up front.
         with h5py.File(dataset_path, "r") as f:
             images = f.get(f"{person_id_str}/image")[()]
             poses = f.get(f"{person_id_str}/pose")[()]

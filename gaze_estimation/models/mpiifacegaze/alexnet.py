@@ -12,11 +12,9 @@ class Model(nn.Module):
         self.feature_extractor = torchvision.models.alexnet(
             weights=torchvision.models.AlexNet_Weights.IMAGENET1K_V1
         ).features
-        # While the pretrained models of torchvision are trained using
-        # images with RGB channel order, in this repository images are
-        # treated as BGR channel order.
-        # Therefore, reverse the channel order of the first convolutional
-        # layer.
+        # The torchvision pretrained weights expect RGB input, but this
+        # repository feeds images in BGR channel order, so reverse the
+        # channel order of the first convolutional layer's weights.
         module = getattr(self.feature_extractor, "0")
         module.weight.data = module.weight.data[:, [2, 1, 0]]
 

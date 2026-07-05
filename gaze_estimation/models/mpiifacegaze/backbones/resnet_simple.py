@@ -24,11 +24,10 @@ class Model(torchvision.models.ResNet):
             # to the same weight files the old URLs did.
             weights = torchvision.models.get_model_weights(pretrained_name).IMAGENET1K_V1
             self.load_state_dict(weights.get_state_dict(progress=True), strict=False)
-            # While the pretrained models of torchvision are trained
-            # using images with RGB channel order, in this repository
-            # images are treated as BGR channel order.
-            # Therefore, reverse the channel order of the first
-            # convolutional layer.
+            # The torchvision pretrained weights expect RGB input, but
+            # this repository feeds images in BGR channel order, so
+            # reverse the channel order of the first convolutional
+            # layer's weights.
             module = self.conv1
             module.weight.data = module.weight.data[:, [2, 1, 0]]
 

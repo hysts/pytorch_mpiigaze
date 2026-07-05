@@ -3,21 +3,24 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/hysts/pytorch_mpiigaze.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/hysts/pytorch_mpiigaze)
 
-[Here](https://github.com/hysts/pytorch_mpiigaze_demo) is a demo program.
-See also [this repo](https://github.com/hysts/pl_gaze_estimation).
+Training and evaluation code for the gaze estimation methods from the MPIIGaze and MPIIFaceGaze papers.
+If you just want to run gaze estimation on a webcam without training anything, use [pytorch_mpiigaze_demo](https://github.com/hysts/pytorch_mpiigaze_demo) instead.
+See also [pl_gaze_estimation](https://github.com/hysts/pl_gaze_estimation), a newer training codebase built on PyTorch Lightning.
 
 ## Requirements
 
-* Linux (Tested on Ubuntu only)
+* Linux (tested on Ubuntu only)
 * Python >= 3.10
 * [uv](https://docs.astral.sh/uv/)
+
+Create the environment with:
 
 ```bash
 uv sync
 ```
 
 
-## Download the dataset and preprocess it
+## Download and preprocess the datasets
 
 ### MPIIGaze
 
@@ -38,29 +41,28 @@ uv run python tools/preprocess_mpiifacegaze.py --dataset datasets/MPIIFaceGaze_n
 
 This repository uses [OmegaConf](https://omegaconf.readthedocs.io/) for
 configuration management.
-Default parameters are specified in
-[`gaze_estimation/config/config_schema.py`](gaze_estimation/config/config_schema.py)
-(which is not supposed to be modified directly).
-You can overwrite those default parameters using a YAML file like
+The default parameters and their types are defined in
+[`gaze_estimation/config/config_schema.py`](gaze_estimation/config/config_schema.py),
+which is not meant to be edited directly.
+Override them with a YAML file like
 [`configs/mpiigaze/lenet_train.yaml`](configs/mpiigaze/lenet_train.yaml),
-and further override single values from the command line in
-`key=value` form, e.g. `train.test_id=1`.
+or with `key=value` arguments on the command line, e.g. `train.test_id=1`.
 
 
-### Training and Evaluation
+### Training and evaluation
 
-By running the following code, you can train a model using all the
-data except the person with ID 0, and run test on that person.
+The following commands train a model on the data of everyone except
+person `p00`, then evaluate it on `p00`:
 
 ```bash
 uv run python train.py --config configs/mpiigaze/lenet_train.yaml
 uv run python evaluate.py --config configs/mpiigaze/lenet_eval.yaml
 ```
 
-Using [`scripts/run_all_mpiigaze_lenet.sh`](scripts/run_all_mpiigaze_lenet.sh) and
-[`scripts/run_all_mpiigaze_resnet_preact.sh`](scripts/run_all_mpiigaze_resnet_preact.sh),
-you can run all training and evaluation for LeNet and ResNet-8 with
-default parameters.
+[`scripts/run_all_mpiigaze_lenet.sh`](scripts/run_all_mpiigaze_lenet.sh) and
+[`scripts/run_all_mpiigaze_resnet_preact.sh`](scripts/run_all_mpiigaze_resnet_preact.sh)
+run this leave-one-person-out loop over all 15 people for LeNet and
+ResNet-preact-8 with the default parameters.
 
 
 ## Results
@@ -72,7 +74,7 @@ default parameters.
 | LeNet           |              6.52              |  3.5 s/epoch  |
 | ResNet-preact-8 |              5.73              |   7 s/epoch   |
 
-The training time is the value when using GTX 1080Ti.
+Training times were measured on a GTX 1080 Ti.
 
 ![](figures/mpiigaze/lenet.png)
 
@@ -85,13 +87,11 @@ The training time is the value when using GTX 1080Ti.
 | AlexNet   |              5.06              |  135 s/epoch  |
 | ResNet-14 |              4.83              |   62 s/epoch  |
 
-The training time is the value when using GTX 1080Ti.
+Training times were measured on a GTX 1080 Ti.
 
 ![](figures/mpiifacegaze/alexnet.png)
 
 ![](figures/mpiifacegaze/resnet_simple.png)
-
-
 
 
 ## Demo

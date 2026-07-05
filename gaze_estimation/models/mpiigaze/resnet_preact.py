@@ -60,7 +60,7 @@ class Model(nn.Module):
         self.stage3 = self._make_stage(n_channels[1], n_channels[2], n_blocks_per_stage, BasicBlock, stride=2)
         self.bn = nn.BatchNorm2d(n_channels[2])
 
-        # compute conv feature size
+        # Compute the flattened feature size after the conv stages.
         with torch.no_grad():
             self.feature_size = self._forward_conv(torch.zeros(*input_shape)).view(-1).size(0)
 
