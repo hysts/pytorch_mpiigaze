@@ -13,7 +13,7 @@ dependencies = [
     "scipy>=1.15.3",
     "tensorboard>=2.21.0",
     "termcolor>=3.3.0",
-    "torch>=2.12.1",
+    "torch>=2.13.0",
     "torchvision>=0.27.1",
     "tqdm>=4.68.3",
 ]
